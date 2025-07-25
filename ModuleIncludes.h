@@ -1,0 +1,16 @@
+#pragma once
+
+#include "Module_Output.h"
+#include "Module_Noise.h"
+#include "Module_Oscillator.h"
+#include "Module_LFO.h"
+#include "Module_Scope.h"
+#include "Module_Filter.h"
+#include "Module_ADSR.h"
+#include "Module_VCA.h"
+#include "Module_Sequencer.h"
+#include "Module_Reverb.h"
+#include "Module_ClockDivide.h"
+#include "Module_VoltQuantizer.h"
+#include "Module_VoltKnobs.h"
+#include "Module_Mixer.h"
