@@ -12,6 +12,20 @@ WireManager::WireManager() {
     instance = this;
 }
 
+void WireManager::Reset() {
+
+    // Deactivate all wires visually/logically first
+    for (auto& wire : wires) {
+        removeChildComponent(wire.get());
+        wire->SetStartEnd({ 0,0 }, { 0,0 });
+        wire->setVisible(false);
+    }
+
+    // Move all unique_ptrs from wires -> vacantWires
+    vacantWires.reserve(vacantWires.size() + wires.size());
+    std::move(wires.begin(), wires.end(), std::back_inserter(vacantWires));
+    wires.clear();
+}
 
 void WireManager::StartWireFrom(WireSocket* fromSocket) {
     

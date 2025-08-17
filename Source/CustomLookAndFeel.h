@@ -16,7 +16,7 @@ struct CustomTheme {
     juce::Colour colour_blockHeaderText = juce::Colour::fromRGB(12, 15, 34);
 
     juce::Colour colour_knobOutline = juce::Colour::fromRGB(41, 47, 53);
-    juce::Colour colour_knobFill = juce::Colour::fromRGB(19, 22, 33);
+    juce::Colour colour_knobFill = juce::Colour::fromRGB(18, 20, 30);
     juce::Colour colour_knobPointer = juce::Colour::fromRGB(125, 120, 140);
     
     juce::Colour colour_blockOutline = juce::Colour::fromRGBA(68, 78, 127, 0);
@@ -32,7 +32,7 @@ struct CustomTheme {
     juce::Colour colour_switchOff = juce::Colour::fromRGB(20 * 3, 14 * 3, 10 * 3);
     juce::Colour colour_switchOffHighlight = juce::Colour::fromRGB(33 * 3, 4 * 3, 23 * 3);
 
-    juce::Colour colour_displayPanel = juce::Colour::fromRGB(12, 15, 34);
+    juce::Colour colour_displayPanel = juce::Colour::fromRGB(18, 20, 30);
 
     juce::Colour colour_selectionOutline = juce::Colour::fromRGB(255, 180, 100);
     juce::Colour colour_selectionFill = juce::Colour::fromRGBA(255, 180, 100, 30);

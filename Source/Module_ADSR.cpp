@@ -1,7 +1,7 @@
 #include "Module_ADSR.h"
 #include "Globals.h"
 
-Module_ADSR::Module_ADSR() : Module::Module(1, "adsr") {
+Module_ADSR::Module_ADSR() : Module::Module(3, "adsr") {
 
     KnobConfiguration knobConfig;
     knobConfig.defaultValue = 0.2;
@@ -10,13 +10,17 @@ Module_ADSR::Module_ADSR() : Module::Module(1, "adsr") {
     knobConfig.max = 8.0;
     knobConfig.skewAroundDefault = true;
 
-    auto& attKob = Component_CreateKnob("attack", 0, 0, &knobConfig);
-    auto& decKob = Component_CreateKnob("decay", 0, 1, &knobConfig);
-    auto& susKob = Component_CreateKnob("sustain", 0, 2, &knobConfig);
-    auto& relKnob = Component_CreateKnob("release", 0, 3, &knobConfig);
 
-    Component_CreateInputSocket("trig", 0, 4);
-    Component_CreateOutputSocket("out", 0, 5);
+    addAndMakeVisible(visual);
+    SetComponentBounds(visual, 0, 1, 3, 2);
+
+    auto& attKob = Component_CreateKnob("attack", 0, 3, &knobConfig);
+    auto& susKob = Component_CreateKnob("sustain", 1, 3, &knobConfig);
+    auto& decKob = Component_CreateKnob("decay", 0, 4, &knobConfig);
+    auto& relKnob = Component_CreateKnob("release", 1, 4, &knobConfig);
+
+    Component_CreateInputSocket("gate", 0, 0);
+    Component_CreateOutputSocket("out", 1, 0);
 }
 
 
@@ -27,11 +31,14 @@ void Module_ADSR::Reset() {
 void Module_ADSR::Prepare(double sampleRate, int blockSize) {
     Module::Prepare(sampleRate, blockSize, 1, 1);
 
-
     adsrParams.attack = Component_GetKnobValue("attack");
     adsrParams.decay = Component_GetKnobValue("decay");
     adsrParams.sustain = Component_GetKnobValue("sustain");
     adsrParams.release = Component_GetKnobValue("release");
+
+    juce::MessageManager::callAsync([this] {
+        visual.SetControls(adsrParams.attack, adsrParams.sustain, adsrParams.decay, adsrParams.release);
+    });
 
     adsr.setParameters(adsrParams);
     adsr.setSampleRate(sampleRate);

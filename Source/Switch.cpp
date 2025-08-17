@@ -1,5 +1,5 @@
 #include "CustomLookAndFeel.h"
-
+#include "RackView.h"
 #include "Switch.h"
 
 Switch::Switch() {
@@ -18,6 +18,10 @@ void Switch::paint(juce::Graphics& g) {
     // Background
     g.setColour(state ? CustomLookAndFeel::GetTheme()->colour_switchOn : CustomLookAndFeel::GetTheme()->colour_switchOff);
     g.fillRect(bounds.reduced(0, 16));
+
+    if (RackView::instance->GetLODFactor() != LOD_CLOSE) {
+        return;
+    }
 
     // Text
     g.setColour(juce::Colours::white);

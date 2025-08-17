@@ -36,10 +36,7 @@ void ModuleCache::CacheModuleData(const std::string& moduleKey, ModuleType modul
 
 const ModuleData& ModuleCache::GetModuleData(const std::string& moduleKey) {
 
-
-	// REMOVE
-	ModuleData d;
-	return d;
+	return moduleData[moduleKey];
 }
 
 const std::unordered_map<std::string, ModuleData>& ModuleCache::GetAllModuleData() {

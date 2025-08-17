@@ -3,6 +3,7 @@
 #include "ModuleIncludes.h"
 #include "CustomLookAndFeel.h"
 #include "ModuleCache.h"
+#include "NewModulePopup.h"
 
 RackView* RackView::instance = nullptr;
 ProcessingManager RackView::processingManager;
@@ -12,6 +13,8 @@ RackView::RackView() //: tooltipWindow(this)
     // there will only ever be a single Rack, so we can make this a singleton
     instance = this;
     setOpaque(true);
+    
+    lodFactor = LOD_CLOSE;
 
     Reset(); 
 
@@ -35,39 +38,19 @@ RackView::RackView() //: tooltipWindow(this)
     ModuleCache::Init();
 
     CreateModule(0, 2, MOD_OUTPUT);
-    CreateModule(1, 1, MOD_NOISE);
-    CreateModule(6, 0, MOD_SCOPE);
-    CreateModule(3, 3, MOD_OSCILLATOR);
-    CreateModule(3, 4, MOD_VOLT_KNOBS);
-    CreateModule(3, 1, MOD_OSCILLATOR);
-    CreateModule(7, 4, MOD_LFO);
-    CreateModule(6, 5, MOD_FILTER);
-
-    CreateModule(22, 2, MOD_CHORD_SEQUENCER);
-
-    CreateModule(1, 3, MOD_VOLT_QUANTIZER);
-    CreateModule(7, 3, MOD_VOLT_QUANTIZER);
-    CreateModule(2, 5, MOD_CLOCK_DIVIDE);
-    CreateModule(8, 2, MOD_CLOCK_DIVIDE);
-    for (int i = 8; i < 15; i++) {
-        CreateModule(i, 5, MOD_ADSR);
-    }
-    CreateModule(6, 4, MOD_SEQUENCER);
-    CreateModule(5, 4, MOD_SEQUENCER);
-
-    CreateModule(12, 4, MOD_MIXER);
-
-    CreateModule(2, 3, MOD_VCA);
-    CreateModule(8, 3, MOD_VCA);
-    CreateModule(9, 3, MOD_VCA);
-    CreateModule(6, 6, MOD_REVERB);
 }
 
 RackView::~RackView() {
 
 }
 
+RackLODFactor RackView::GetLODFactor() {
+    return lodFactor;
+}
+
 void RackView::Reset() {
+
+    wireManager.Reset();
 
     grid.resize(GLOBAL_RACK_WIDTH * GLOBAL_RACK_HEGHT);
 
@@ -163,6 +146,13 @@ Module* RackView::CreateModule(int idealX, int idealY, ModuleType type) {
     }
 
     return cell.blockReference.get();
+}
+
+void RackView::CreateModuleFromBrowser(const juce::String& moduleName) {
+
+    const ModuleData& data =  ModuleCache::GetModuleData(moduleName.toStdString());
+    CreateModule(1, 1, (ModuleType)data.moduleType);
+    NewModulePopup::SetOpenState(false);
 }
 
 void RackView::MoveModule(int originalX, int originalY, int newX, int newY) {
@@ -262,6 +252,15 @@ void RackView::resized()
 
 void RackView::mouseDown(const juce::MouseEvent& e)
 {
+    // dont continue if module browser is open...
+    if (NewModulePopup::GetOpenState()) {
+        return;
+    }
+
+    if (e.mods.isRightButtonDown()) {
+        NewModulePopup::SetOpenState(true);
+    }
+
     if (e.mods.isMiddleButtonDown()) {
 
         movingSelectedModules = false;
@@ -333,6 +332,10 @@ void RackView::mouseDown(const juce::MouseEvent& e)
 
 void RackView::mouseDrag(const juce::MouseEvent& e)
 {
+    if (NewModulePopup::GetOpenState()) {
+        return;
+    }
+
     if (e.mods.isLeftButtonDown())
     {
         float screenX = e.position.x;
@@ -388,6 +391,10 @@ void RackView::mouseDrag(const juce::MouseEvent& e)
 
 void RackView::mouseUp(const juce::MouseEvent& e) {
 
+    if (NewModulePopup::GetOpenState()) {
+        return;
+    }
+
     if (e.mods.isMiddleButtonDown()) {
         MoveSelectedModules();
     }
@@ -403,6 +410,19 @@ void RackView::mouseWheelMove(const juce::MouseEvent& e,
 
     const float factor = wheel.deltaY > 0 ? 1.10f : 0.90f;
     zoom *= factor;
+
+    DBG(view.getScaleFactor());
+
+    if (view.getScaleFactor() > 0.66) {
+        lodFactor = LOD_CLOSE;
+    }
+    else {
+        lodFactor = LOD_MID;
+    }
+
+
+
+
 
     view = juce::AffineTransform::scale(factor, factor,
         e.position.x, e.position.y)
@@ -496,6 +516,9 @@ void RackView::CalculateSelectedModules() {
                 cell = &grid[GI(tempX, y)];
             }
 
+            if (cell->blockReference == nullptr) {
+                continue;
+            }
 
             cell->blockReference->SetGridOffsetOnSelection(tempX - gridX1, y - gridY1);
             cell->blockReference->SetSelected(true);

@@ -24,7 +24,7 @@ class PianoSwitch : public juce::Component {
 			@param		writeBuffer		the output buffer we are writing to, we can assume this is polyphonic (16 channels)
 			@param		sampleRate		the number of samples to process
 		*/
-		int WriteVoltagesToPolyphonicBuffer(juce::AudioBuffer<float>& writeBuffer, int numberOfSamples);
+		int WriteVoltagesToPolyphonicBuffer(juce::AudioBuffer<float>& writeBuffer, int numberOfSamples, float vOctShift = 0);
 
 	private:
 

@@ -7,10 +7,16 @@
 #include "CustomLookAndFeel.h"
 #include "ProcessingManager.h"
 
-
 #include "FloatingBlockComponent.h"
 #include "SelectionComponent.h"
 
+
+enum RackLODFactor {
+
+    LOD_CLOSE,
+    LOD_MID,
+    LOD_FAR,
+};
 
 struct RackModule {
 
@@ -30,6 +36,11 @@ class RackView : public juce::Component
 
         RackView();
         ~RackView();
+
+        /*
+            @returns the current LOD factor of the rack, determines the quality module should be rendered at
+        */
+        RackLODFactor GetLODFactor();
 
         /*
             Reset the state of the rack, called when a new patch is loaded
@@ -64,6 +75,10 @@ class RackView : public juce::Component
             memory for the block is first searched for in blockInactivePool, otherwise new memory is allocated.
         */
         Module* CreateModule(int idealX, int idealY, ModuleType type);
+        /*
+            @param moduleCacheName  the name of the module in the module Cache
+        */
+        void CreateModuleFromBrowser(const juce::String& moduleCacheName);
         void MoveModule(int originalX, int originalY, int newX, int newY);
         
         /*
@@ -91,7 +106,7 @@ class RackView : public juce::Component
     private:
         
 
-
+        RackLODFactor lodFactor;
         CustomLookAndFeel customLookAndFeel;
 
         std::vector<RackModule> grid;

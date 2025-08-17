@@ -18,7 +18,6 @@ class SerializerManager {
         */
         static void DeserializePatch(const juce::var& patchData, RackView& rack);
 
-
         /*
             Writes the RackView state to a file
         */

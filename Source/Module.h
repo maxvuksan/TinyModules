@@ -174,6 +174,12 @@ class Module : public juce::Component
 
         std::string GetModuleName();
 
+        /*
+            given a string, removes all the content after the first '#' character. e.g.
+            "gain#4" would become "gain" when displayed. This is good to prevent naming conflicts 
+        */
+        std::string SanitizeLabel(const std::string& label);
+
     protected:
 
         bool selected;

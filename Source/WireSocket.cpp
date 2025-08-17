@@ -28,6 +28,20 @@ void WireSocket::paint(juce::Graphics& g)
         squareBaseRadius * 2.0f
     );
 
+    if (RackView::instance->GetLODFactor() != LOD_CLOSE) {
+
+        if (isInput) {
+            g.setColour(CustomLookAndFeel::GetTheme()->colour_knobPointer);
+            g.drawRect(squareBaseRect, 2.0f);
+        }
+        else {
+            g.setColour(CustomLookAndFeel::GetTheme()->colour_knobFill);
+            g.fillRect(squareBaseRect);
+        }
+
+        return;
+    }
+
     if (isInput) {
         g.setColour(CustomLookAndFeel::GetTheme()->colour_knobOutline);
         g.drawRect(squareBaseRect, 2.0f);

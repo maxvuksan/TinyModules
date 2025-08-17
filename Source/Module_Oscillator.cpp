@@ -2,7 +2,7 @@
 #include "Globals.h"
 #include "DSPUtility.h"
 
-Module_Oscillator::Module_Oscillator() : Module::Module(3, "oscillator") {
+Module_Oscillator::Module_Oscillator() : Module::Module(5, "oscillator") {
 
     KnobConfiguration freqConfig;
     freqConfig.defaultValue = 261.63;
@@ -11,45 +11,53 @@ Module_Oscillator::Module_Oscillator() : Module::Module(3, "oscillator") {
     freqConfig.max = 16000;
     freqConfig.skewAroundDefault = true;
 
-    auto& freqKnob = Component_CreateKnob("freq", 2, 0, &freqConfig);
+    for (int osc = 0; osc < 2; osc++) {
+        addAndMakeVisible(oscillators[osc].waveformVisual);
+        SetComponentBounds(oscillators[osc].waveformVisual, 1, 1 + osc * 3, 3, 2);
+        oscillators[osc].waveformVisual.SetWaveType(DSP::WaveType::Sine);
+    }
 
-    KnobConfiguration fmConfig;
-    freqConfig.defaultValue = 0;
-    freqConfig.increment = 0.001;
-    freqConfig.min = -1;
-    freqConfig.max = 1;
-
-    auto& fmDepthKnob = Component_CreateKnob("fm", 0, 3, &fmConfig);
-
-
-    Component_CreateInputSocket("fm", 0, 4);
+    auto& freqKnob = Component_CreateKnob("freq#0", 3, 0, &freqConfig);
+    auto& freqKnob2 = Component_CreateKnob("freq#1", 3, 3, &freqConfig);
     Component_CreateInputSocket("v/oct", 0, 0);
 
-    Component_CreateOutputSocket("sin", 2, 1);
-    Component_CreateOutputSocket("squ", 2, 2);
-    Component_CreateOutputSocket("saw", 2, 3);
-    Component_CreateOutputSocket("tri", 2, 4);
+    KnobConfiguration gainConfig;
+    freqConfig.defaultValue = 1;
+    freqConfig.increment = 0.01;
+    freqConfig.min = 0;
+    freqConfig.max = 2;
+    auto& gainKnob = Component_CreateKnob("gain#0", 1, 0, &gainConfig);
+    auto& gainKnob2 = Component_CreateKnob("gain#1", 1, 3, &gainConfig);
+
+    KnobConfiguration octConfig;
+    octConfig.defaultValue = 0;
+    octConfig.min = -4;
+    octConfig.max = 4;
+    octConfig.increment = 1;
+    auto& octKnob = Component_CreateKnob("oct#0", 2, 0, &octConfig);
+    auto& octKnob2 = Component_CreateKnob("oct#1", 2, 3, &octConfig);
+
+    Component_CreateOutputSocket("out", 4, 0);
 }
 
 void Module_Oscillator::Reset() {
     // set each channel to 0
-    for (int i = 0; i < 16; i++) {
-        phase[i] = 0;
+    for (int osc = 0; osc < 2; osc++) {
+        for (int i = 0; i < 16; i++) {
+            oscillators[osc].phase[i] = 0;
+        }
     }
 }
 
 void Module_Oscillator::Prepare(double sampleRate, int blockSize) {
-    Module::Prepare(sampleRate, blockSize, 2, 4);
+    Module::Prepare(sampleRate, blockSize, 1, 1);
 }
 
 void Module_Oscillator::Process() {
 
     const int numSamples = GetOutputBuffer(0).getNumSamples();
 
-    float* sineOut      = GetOutputWritePtr(0);
-    float* squareOut    = GetOutputWritePtr(1);
-    float* sawOut       = GetOutputWritePtr(2);
-    float* triangleOut  = GetOutputWritePtr(3);
+    float* outWritPtr      = GetOutputWritePtr(0);
 
     // TODO: num of active voices need to be assigned to the input socket from out socket 
     /*
@@ -57,56 +65,40 @@ void Module_Oscillator::Process() {
     */
     int numActiveVoices = Component_GetSocket("v/oct")->GetNumActiveVoices();
 
-    DBG(numActiveVoices);
+    for (int osc = 0; osc < 2; osc++) {
 
-    float knobFreq = Component_GetKnobValue("freq"); // Hz
-    float knobVolts = DSP::FrequencyToVoltage(knobFreq);
+        float knobFreq = Component_GetKnobValue("freq#" + std::to_string(osc)); // Hz
+        float knobGain = Component_GetKnobValue("gain#" + std::to_string(osc)); // 0-2
+        float knobOct = Component_GetKnobValue("oct#" + std::to_string(osc));
 
-    for (int voice = 0; voice < numActiveVoices; voice++) {
+        float knobVolts = DSP::FrequencyToVoltage(knobFreq) + knobOct;
 
-        float vOct = 0;
-        if (Component_GetSocket("v/oct")->HasConnection()) {
+        for (int voice = 0; voice < numActiveVoices; voice++) {
 
-            const float* vOctBuffer = GetInputReadPtr(1, voice); // V/OCT input
-            vOct = vOctBuffer[0];
-        }
+            float vOct = 0;
+            if (Component_GetSocket("v/oct")->HasConnection()) {
 
-        float totalVolts = knobVolts + vOct;
+                const float* vOctBuffer = GetInputReadPtr(0, voice); // V/OCT input
+                vOct = vOctBuffer[0];
+            }
 
-        for (int i = 0; i < numSamples; ++i)
-        {
-            float fm = GetInputReadPtr(0)[i];
-
-            float freq = DSP::VoltageToFrequency(totalVolts) + (fm * Component_GetKnobValue("FM") * 15.0f);
-
+            float totalVolts = knobVolts + vOct;
+            float freq = DSP::VoltageToFrequency(totalVolts);
             phaseIncrement = DSP::GetPhaseIncrement(freq, sampleRate);
 
-            // Generate samples
-            float sineSample        = DSP::SampleWaveform(DSP::WaveType::Sine, phase[voice]);
-            float squareSample      = DSP::SampleWaveform(DSP::WaveType::Square, phase[voice]);
-            float sawSample         = DSP::SampleWaveform(DSP::WaveType::Saw, phase[voice]);
-            float triangleSample    = DSP::SampleWaveform(DSP::WaveType::Triangle, phase[voice]);
+            for (int i = 0; i < numSamples; ++i)
+            {
+                // Generate samples
+                float sample = DSP::SampleWaveform(oscillators[osc].waveformVisual.GetWaveType(), oscillators[osc].phase[voice]);
 
-            // Write to output buffer 
-            sineOut[i]      += sineSample;
-            squareOut[i]    += squareSample;
-            sawOut[i]       += sawSample;
-            triangleOut[i]  += triangleSample;
+                // Write to output buffer 
+                outWritPtr[i] += sample * knobGain;
 
-            DSP::IncrementPhase(phase[voice], phaseIncrement);
+                DSP::IncrementPhase(oscillators[osc].phase[voice], phaseIncrement);
+            }
         }
     }
 
-    /* Optional normalisation:  prevent level jump as voices stack
-   (comment out if you want true amplitude build-up) */ 
-    if (numActiveVoices > 1)
-    {
-        const float g = 1.0f / numActiveVoices;
-        //juce::FloatVectorOperations::multiply(sineOut, g, numSamples);
-        //juce::FloatVectorOperations::multiply(squareOut, g, numSamples);
-        //juce::FloatVectorOperations::multiply(sawOut, g, numSamples);
-        //juce::FloatVectorOperations::multiply(triangleOut, g, numSamples);
-    }
 }
 
 

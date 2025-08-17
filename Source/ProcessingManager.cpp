@@ -39,7 +39,6 @@ const std::vector<Connection>& ProcessingManager::GetAllConnections() {
 
 void ProcessingManager::AddConnection(ConnectionType connectionType, Module* outModule, int outSocketIndex, Module* inModule, int inSocketIndex) {
 
-
     Connection toAdd{ connectionType, outModule, outSocketIndex, inModule, inSocketIndex };
 
     for (int i = 0; i < connections.size(); i++) {
@@ -51,7 +50,19 @@ void ProcessingManager::AddConnection(ConnectionType connectionType, Module* out
     }
 
     connections.push_back(toAdd);
-    
+
+    /*
+    Connection& newConnection = connections.back();
+
+    if (connectionType == CONNECT_MONO) {
+        newConnection.delayBuffer.setSize(2, 1);  // 1 channels, 1 sample
+    }
+    else { // polyphonic
+        newConnection.delayBuffer.setSize(16, 1);  // 16 channels, 1 sample
+    }
+
+    newConnection.delayBuffer.clear();
+    */
     SortModules();
 }
 
@@ -233,14 +244,9 @@ void ProcessingManager::ProcessModule(Module* _module) {
 
                 const float* readPtr = otherBuffer.getReadPointer(con);
 
-                for (int sample = 0; sample < inBuffer.getNumSamples(); ++sample) {
-                    writePtr[sample] += readPtr[sample];
-                }
+                inBuffer.addFrom(con, 0, otherBuffer, con, 0, inBuffer.getNumSamples());
             }
-
-
         }
-
     }
 
     // finally, with the input buffers populated, perform processing

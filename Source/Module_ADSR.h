@@ -1,5 +1,6 @@
 #pragma once
 #include "Module.h"
+#include "EnvelopeVisual.h"
 #include <JuceHeader.h>
 
 class Module_ADSR : public Module {
@@ -16,6 +17,8 @@ class Module_ADSR : public Module {
 
 		juce::ADSR adsr; // envelope
 		juce::ADSR::Parameters adsrParams;
+
+		EnvelopeVisual visual;
 
 		bool previousGateHigh = false;
 };

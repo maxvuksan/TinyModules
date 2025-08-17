@@ -21,6 +21,11 @@ struct Connection {
 	Module* inModule;
 	int inSocketIndex;
 
+
+	// introduce 1 sample delay to allow module graph to contain cycles?,
+	//juce::AudioBuffer<float> delayBuffer;
+
+
 	/* Two connections are equal if they have the same parameters */
 	bool operator==(const Connection& other) const {
 		return outModule == other.outModule &&

@@ -1,5 +1,6 @@
 #include "Knob.h"
 #include "CustomLookAndFeel.h"
+#include "RackView.h"
 
 Knob::Knob() {
     defaultValue = 0;
@@ -111,16 +112,39 @@ void Knob::paint(juce::Graphics& g)
     g.setColour(CustomLookAndFeel::GetTheme()->colour_knobOutline);
     g.drawEllipse(centerX - radius - 1, centerY - radius - 1, (radius + 1) * 2, (radius + 1) * 2, 2.0f);
 
+
+    if (RackView::instance->GetLODFactor() != LOD_CLOSE) {
+        return;
+    }
+
+    if (this->visuallyEnabled) {
+
+        if (colourType == KNOB_COL_DEFAULT) {
+            g.setColour(CustomLookAndFeel::GetTheme()->colour_switchOn);
+        }
+        else {
+            g.setColour(CustomLookAndFeel::GetTheme()->colour_switchOutline);
+        }
+    }
+    else {
+        g.setColour(CustomLookAndFeel::GetTheme()->colour_knobFill);
+    }
+
+
     // --- Pointer ---
-    const float pointerLength = radius * 1.2f;
-    const float pointerThickness = 3.0f;
+    const float pointerStepoff = radius * 0.6;
+    const float pointerLength = radius * 0.64f;
+    const float pointerThickness = 1.5f;
 
     juce::Path pointer;
-    pointer.startNewSubPath(centerX, centerY);
-    pointer.lineTo(centerX + pointerLength * std::cos(angle),
-        centerY + pointerLength * std::sin(angle));
 
-    g.setColour(CustomLookAndFeel::GetTheme()->colour_knobPointer);
+    float pointX = centerX + pointerStepoff * std::cos(angle);
+    float pointY = centerY + pointerStepoff * std::sin(angle);
+
+    pointer.startNewSubPath(pointX, pointY);
+    pointer.lineTo(pointX + pointerLength * std::cos(angle),
+        pointY + pointerLength * std::sin(angle));
+
     g.strokePath(pointer, juce::PathStrokeType(pointerThickness));
 }
 

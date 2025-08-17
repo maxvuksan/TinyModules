@@ -206,7 +206,7 @@ void PianoSwitch::SetHighlightedKey(int index) {
     repaint();
 }
 
-int PianoSwitch::WriteVoltagesToPolyphonicBuffer(juce::AudioBuffer<float>& writeBuffer, int numberOfSamples) {
+int PianoSwitch::WriteVoltagesToPolyphonicBuffer(juce::AudioBuffer<float>& writeBuffer, int numberOfSamples, float vOctShift) {
 
     cachedVoltages.clear();
 
@@ -222,7 +222,7 @@ int PianoSwitch::WriteVoltagesToPolyphonicBuffer(juce::AudioBuffer<float>& write
      
         // write voltages to buffer, only write the number of notes pressed, leave rest
         for (int i = 0; i < numberOfSamples; i++) {
-            writeBuffer.getWritePointer(vol)[i] = cachedVoltages[vol];
+            writeBuffer.getWritePointer(vol)[i] = cachedVoltages[vol] + vOctShift;
         }
     }
 

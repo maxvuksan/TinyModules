@@ -39,11 +39,7 @@ void Module::paint(juce::Graphics& g){
     g.setColour(CustomLookAndFeel::GetTheme()->colour_blockHeader);
     g.fillRoundedRectangle(headerBounds, CustomLookAndFeel::GetTheme()->borderRadius);
 
-    g.setColour(CustomLookAndFeel::GetTheme()->colour_blockHeaderText);
-    g.drawText(moduleName,
-        headerBounds.getX(), 6,
-        headerBounds.getWidth(), 14.0f,
-        juce::Justification::centredTop);
+
 
     // Main body below the header
     bounds.removeFromTop(GLOBAL_BLOCK_HEIGHT_PADDING);
@@ -58,41 +54,40 @@ void Module::paint(juce::Graphics& g){
     //g.setColour(CustomLookAndFeel::GetTheme()->colour_blockHeaderText);
 
 
+
+    if (RackView::instance->GetLODFactor() != LOD_CLOSE) {
+        return;
+    }
+
+    // draw module title
+    g.setColour(CustomLookAndFeel::GetTheme()->colour_blockHeaderText);
+    g.drawText(moduleName,
+        headerBounds.getX(), 6,
+        headerBounds.getWidth(), 14.0f,
+        juce::Justification::centredTop);
+
     // paint text for components
 
     const int textOffsetY = -14;
     g.setColour(CustomLookAndFeel::GetTheme()->colour_knobPointer); 
     for (const auto& [label, knob] : componentsKnobs)
     {
-        if (knob.second)
-        {
-            if (label.at(0) == '#') {
-                continue;
-            }
+        auto bounds = knob.second->getBounds().toFloat();
 
-            auto bounds = knob.second->getBounds().toFloat();
-            g.drawText(label,
-                bounds.getX(), bounds.getBottom() + textOffsetY,
-                bounds.getWidth(), 14.0f,
-                juce::Justification::centredTop);
-        }
+        g.drawText(knob.first.displayName,
+            bounds.getX(), bounds.getBottom() + textOffsetY,
+            bounds.getWidth(), 14.0f,
+            juce::Justification::centredTop);
     }
 
     for (const auto& [label, socket] : componentsSockets)
     {
-        if (socket.second)
-        {
-            auto bounds = socket.second->getBounds().toFloat();
+        auto bounds = socket.second->getBounds().toFloat();
 
-            if (label.at(0) == '#') {
-                continue;
-            }
-
-            g.drawText(label,
-                bounds.getX(), bounds.getBottom() + textOffsetY,
-                bounds.getWidth(), 14.0f,
-                juce::Justification::centredTop);
-        }
+        g.drawText(socket.first.displayName,
+            bounds.getX(), bounds.getBottom() + textOffsetY,
+            bounds.getWidth(), 14.0f,
+            juce::Justification::centredTop);
     }
 
 
@@ -311,6 +306,7 @@ Knob& Module::Component_CreateKnob(const std::string& label, int x, int y, KnobC
         finalConfig = *configuration;
     }
 
+    it->second.first.displayName = SanitizeLabel(label);
     it->second.first.coordinate = { x, y };
     it->second.first.size = { 1, 1 };
 
@@ -348,6 +344,7 @@ int Module::Component_CreateSocket(const std::string& label, int x, int y, bool 
     auto [it, inserted] = componentsSockets.try_emplace(label, ComponentConfig{}, std::make_unique<WireSocket>(this, isInput, dspIndex, socketType));
     auto& socket = *it->second.second;
 
+    it->second.first.displayName = SanitizeLabel(label);
     it->second.first.coordinate = { x, y };
     it->second.first.size = { 1, 1 };
 
@@ -363,7 +360,8 @@ Switch& Module::Component_CreateSwitch(const std::string& label, int x, int y, c
 
     auto [it, inserted] = componentsSwitches.try_emplace(label, ComponentConfig{}, std::make_unique<Switch>());
     auto& _switch = *it->second.second;
-
+    
+    it->second.first.displayName = SanitizeLabel(label);
     it->second.first.coordinate = { x, y };
     it->second.first.size = { 1, 1 };
 
@@ -381,7 +379,8 @@ ComponentScope& Module::Component_CreateScope(const std::string& label, int x, i
 
     auto [it, inserted] = componentsScopes.try_emplace(label, ComponentConfig{}, std::make_unique<ComponentScope>());
     auto& cs = *it->second.second;
-
+   
+    it->second.first.displayName = SanitizeLabel(label);
     it->second.first.coordinate = { x, y };
     it->second.first.size = { 2, 2 };
 
@@ -494,4 +493,15 @@ const ModuleType Module::GetModuleType() {
 
 std::string Module::GetModuleName() { 
     return this->moduleName; 
+}
+
+std::string Module::SanitizeLabel(const std::string& label) {
+    
+    auto pos = label.find('#');
+    
+    if (pos != std::string::npos) {
+        return label.substr(0, pos);
+    }
+
+    return label;
 }

@@ -6,6 +6,8 @@
   <MAINGROUP id="a956Ym" name="Juce_SketchRack">
     <GROUP id="{E5BA0798-C99E-B14A-9E1F-BD9FCAE25256}" name="Source">
       <GROUP id="{A670713F-DE3C-8585-F43F-C2A6DE1CDC3A}" name="UI">
+        <FILE id="ycCLao" name="SearchBar.cpp" compile="1" resource="0" file="Source/SearchBar.cpp"/>
+        <FILE id="Zx8xvq" name="SearchBar.h" compile="0" resource="0" file="Source/SearchBar.h"/>
         <FILE id="v0rhBz" name="TextList.cpp" compile="1" resource="0" file="Source/TextList.cpp"/>
         <FILE id="wZMVeq" name="TextList.h" compile="0" resource="0" file="Source/TextList.h"/>
         <FILE id="a2yT3N" name="HeaderBar.cpp" compile="1" resource="0" file="Source/HeaderBar.cpp"/>
@@ -52,6 +54,10 @@
         <FILE id="kLoNVF" name="DSPUtility.h" compile="0" resource="0" file="Source/DSPUtility.h"/>
       </GROUP>
       <GROUP id="{E1FD3949-4072-B180-46CD-A56B32E5B910}" name="ModuleElements">
+        <FILE id="Wrcvxk" name="EnvelopeVisual.cpp" compile="1" resource="0"
+              file="Source/EnvelopeVisual.cpp"/>
+        <FILE id="R7Fo5T" name="EnvelopeVisual.h" compile="0" resource="0"
+              file="Source/EnvelopeVisual.h"/>
         <FILE id="cEXL7h" name="Knob.cpp" compile="1" resource="0" file="Source/Knob.cpp"/>
         <FILE id="jEv9lQ" name="Knob.h" compile="0" resource="0" file="Source/Knob.h"/>
         <FILE id="bFsFl8" name="PianoSwitch.cpp" compile="1" resource="0" file="Source/PianoSwitch.cpp"/>
@@ -60,6 +66,10 @@
         <FILE id="f83ZlM" name="Switch.h" compile="0" resource="0" file="Source/Switch.h"/>
         <FILE id="e7cao5" name="SwitchGrid.cpp" compile="1" resource="0" file="Source/SwitchGrid.cpp"/>
         <FILE id="OEl0QS" name="SwitchGrid.h" compile="0" resource="0" file="Source/SwitchGrid.h"/>
+        <FILE id="wKUgoc" name="WaveformVisual.cpp" compile="1" resource="0"
+              file="Source/WaveformVisual.cpp"/>
+        <FILE id="lSQ72U" name="WaveformVisual.h" compile="0" resource="0"
+              file="Source/WaveformVisual.h"/>
         <FILE id="Nebero" name="WireComponent.cpp" compile="1" resource="0"
               file="Source/WireComponent.cpp"/>
         <FILE id="Bo1iwg" name="WireComponent.h" compile="0" resource="0" file="Source/WireComponent.h"/>

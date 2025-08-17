@@ -20,7 +20,12 @@ Juce_SketchRackAudioProcessorEditor::Juce_SketchRackAudioProcessorEditor (Juce_S
     setSize (1400, 1000);
     setResizable(true, false);
     addAndMakeVisible(rackViewport);
+
     addAndMakeVisible(moduleBrowser);
+    moduleBrowser.SetOpenState(false);
+
+
+
 
     auto* topLevel = juce::TopLevelWindow::getTopLevelWindow(0);
     if (topLevel) {
@@ -56,4 +61,15 @@ void Juce_SketchRackAudioProcessorEditor::resized()
     rackViewport.setBounds(getLocalBounds()); // Fill the plugin window
 
     moduleBrowser.setBounds(rackViewport.getLocalBounds().withTrimmedTop(headerBar.getHeight()).reduced(100, 50));
+}
+
+bool Juce_SketchRackAudioProcessorEditor::keyPressed(const juce::KeyPress& key)
+{
+    if (key == juce::KeyPress::escapeKey)
+    {
+        NewModulePopup::SetOpenState(false);
+        return true;
+    }
+
+    return false; // Pass through unhandled keys
 }

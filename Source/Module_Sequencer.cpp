@@ -169,6 +169,7 @@ void Module_Sequencer::Prepare(double sampleRate, int blockSize) {
 
 void Module_Sequencer::Process() {
 
+
     for (int n = 0; n < GetInputBuffer(0).getNumSamples(); n++) {
 
         bool currentClockHigh = GetInputReadPtr(1)[n] > 0.5f;
@@ -198,10 +199,7 @@ void Module_Sequencer::Process() {
                 anyTriggerSent = true;
 
                 float* writePtr = GetOutputWritePtr(i);
-
-                for (int n = 0; n < GetOutputBuffer(0).getNumSamples(); n++) {
-                    writePtr[n] = 5.0; //5V
-                }
+                std::fill_n(writePtr, GetOutputBuffer(0).getNumSamples(), 5.0f); // 5V
             }
 
             // send global trigger
@@ -209,14 +207,10 @@ void Module_Sequencer::Process() {
             if (anyTriggerSent) {
 
                 float* writePtr = GetOutputWritePtr(4);
-
-                for (int n = 0; n < GetOutputBuffer(0).getNumSamples(); n++) {
-                    writePtr[n] = 5.0; //5V
-                }
+                std::fill_n(writePtr, GetOutputBuffer(0).getNumSamples(), 5.0f); // 5V
             }
 
         }
-
 
 
         // output v/oct signals if needed
@@ -240,9 +234,7 @@ void Module_Sequencer::Process() {
                 vOctVal = Component_GetKnobValue("v/oct");
             }
 
-            for (int n = 0; n < GetOutputBuffer(0).getNumSamples(); n++) {
-                vOctPtr[n] = vOctVal;
-            }
+            std::fill_n(vOctPtr, GetOutputBuffer(0).getNumSamples(), vOctVal);
             
         }
 

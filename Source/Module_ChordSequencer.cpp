@@ -18,10 +18,16 @@ Module_ChordSequencer::Module_ChordSequencer() : Module(8, "chords") {
 
     Component_CreateKnob("glide", 3, 0, nullptr);
 
-    Component_CreateKnob("octave", 0, 5, nullptr);
-    Component_CreateKnob("octave2", 2, 5, nullptr);
-    Component_CreateKnob("octave3", 4, 5, nullptr);
-    Component_CreateKnob("octave4", 6, 5, nullptr);
+    KnobConfiguration knobConfig;
+    knobConfig.defaultValue = 0;
+    knobConfig.min = -4;
+    knobConfig.max = 4;
+    knobConfig.increment = 1;
+
+    Component_CreateKnob("oct#0", 0, 5, &knobConfig);
+    Component_CreateKnob("oct#1", 2, 5, &knobConfig);
+    Component_CreateKnob("oct#2", 4, 5, &knobConfig);
+    Component_CreateKnob("oct#4", 6, 5, &knobConfig);
 }
 
 juce::var Module_ChordSequencer::SerializeCustom()
@@ -100,7 +106,7 @@ void Module_ChordSequencer::Process() {
 
     juce::AudioBuffer<float>& vOctOut = GetOutputBuffer(0);
 
-    int numActiveVoices = pianoSwitch[stepIndex]->WriteVoltagesToPolyphonicBuffer(vOctOut, vOctOut.getNumSamples());
+    int numActiveVoices = pianoSwitch[stepIndex]->WriteVoltagesToPolyphonicBuffer(vOctOut, vOctOut.getNumSamples(), Component_GetKnobValue("oct#" + std::to_string(stepIndex)));
     Component_GetSocket("v/oct")->SetNumActiveVoices(numActiveVoices);
 }
 

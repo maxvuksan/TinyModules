@@ -1,5 +1,12 @@
 #pragma once
 #include "Module.h"
+#include "WaveformVisual.h"
+
+struct OscillatorStructure {
+	float phase[16];
+	WaveformVisual waveformVisual;
+
+};
 
 class Module_Oscillator : public Module {
 
@@ -13,9 +20,7 @@ class Module_Oscillator : public Module {
 
 	private:
 
-
-		float phase[16];
-
+		OscillatorStructure oscillators[2];
 		float phaseIncrement = 0;
 
 };

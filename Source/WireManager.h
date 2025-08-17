@@ -22,6 +22,8 @@ class WireManager : public juce::Component
 
         WireManager();
 
+        void Reset();
+
         /* called from the socket drawing the wire */
         void StartWireFrom(WireSocket* fromSocket);
         void MoveWireFrom(WireSocket* fromSocket);

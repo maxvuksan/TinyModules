@@ -1,3 +1,4 @@
+#pragma once
 #include "WireSocket.h"
 
 namespace DSP {
@@ -26,7 +27,7 @@ namespace DSP {
 
     float AverageSamples(const float* readBufferPointer, int numberOfSamples);
 
-    float SampleWaveform(WaveType type, float phase); 
+    float SampleWaveform(WaveType type, float phase);
 
     float GetPhaseIncrement(float frequency, double sampleRate);
     void IncrementPhase(float& phase, float phaseIncrement);

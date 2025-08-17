@@ -41,9 +41,12 @@ namespace DSP {
             case Square:
                 sample = std::sin(phase) >= 0.0f ? 1.0f : -1.0f;
                 break;
-            case Saw:
-                sample = (2.0f / juce::MathConstants<float>::pi) * (phase - juce::MathConstants<float>::pi);
+            case Saw: {
+                float p = std::fmod(phase, juce::MathConstants<float>::twoPi);
+                if (p < 0.0f) p += juce::MathConstants<float>::twoPi;
+                sample = 2.0f * (p / juce::MathConstants<float>::twoPi) - 1.0f;
                 break;
+            }
             case Triangle:
                 sample = std::asin(std::sin(phase)) * (2.0f / juce::MathConstants<float>::pi);
                 break;

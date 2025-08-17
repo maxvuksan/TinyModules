@@ -5,6 +5,7 @@
 
 struct ComponentConfig {
 
+    std::string displayName;
     juce::Point<int> coordinate;
     juce::Point<int> size;
 };
