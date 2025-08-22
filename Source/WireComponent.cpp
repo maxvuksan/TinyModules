@@ -1,5 +1,6 @@
 #include "WireComponent.h"
 #include "Globals.h"
+#include "Popup_Settings.h"
 
 
 void WireComponent::SetStartEnd(juce::Point<float> start, juce::Point<float> end)
@@ -9,11 +10,13 @@ void WireComponent::SetStartEnd(juce::Point<float> start, juce::Point<float> end
 
     // Compute sag based on distance
     float distance = start.getDistanceFrom(end);
-    float sag = juce::jlimit(10.0f, 80.0f, distance * 0.25f);
+    float sagScale = juce::jlimit(10.0f, 80.0f, distance * 0.25f);
+    float sag = GLOBAL_WIRE_SAG * (1 - (float)Popup_Settings::GetSettings().wireTension.getValue());
+    sag *= sagScale;
 
     // Midpoint + sag to calculate control point
     float cx = (start.x + end.x) * 0.5f;
-    float cy = (start.y + end.y) * 0.5f + sag * GLOBAL_WIRE_SAG;
+    float cy = (start.y + end.y) * 0.5f + sag;
 
     // Create a Path for calculating bounds
     juce::Path tempPath;
@@ -54,10 +57,12 @@ void WireComponent::paint(juce::Graphics& g)
     auto p2 = endPos;
 
     float distance = p1.getDistanceFrom(p2);
-    float sag = juce::jlimit(10.0f, 80.0f, distance * 0.25f); // scale and clamp
+    float sagScale = juce::jlimit(10.0f, 80.0f, distance * 0.25f);
+    float sag = GLOBAL_WIRE_SAG * (1 - (float)Popup_Settings::GetSettings().wireTension.getValue());
+    sag *= sagScale;
 
     float cx = (p1.x + p2.x) * 0.5f;
-    float cy = (p1.y + p2.y) * 0.5f + sag * GLOBAL_WIRE_SAG; // center line, sag downward
+    float cy = (p1.y + p2.y) * 0.5f + sag; // center line, sag downward
 
     path.startNewSubPath(p1);
     path.quadraticTo(cx, cy, p2.x, p2.y);

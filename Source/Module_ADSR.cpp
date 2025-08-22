@@ -1,7 +1,7 @@
 #include "Module_ADSR.h"
 #include "Globals.h"
 
-Module_ADSR::Module_ADSR() : Module::Module(3, "adsr") {
+Module_ADSR::Module_ADSR() : Module::Module(3, "adsr envelope") {
 
     KnobConfiguration knobConfig;
     knobConfig.defaultValue = 0.2;

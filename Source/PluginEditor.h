@@ -10,7 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "NewModulePopup.h"
+#include "Popups.h"
 #include "HeaderBar.h"
 #include "Globals.h"
 #include "Module.h"
@@ -32,8 +32,8 @@ public:
     void resized() override;
     bool keyPressed(const juce::KeyPress& key);
     
-    NewModulePopup moduleBrowser;
     HeaderBar headerBar;
+    Popups popups;
 
     juce::Viewport rackViewport;
     RackView rack;

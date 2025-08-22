@@ -17,12 +17,12 @@ Juce_SketchRackAudioProcessorEditor::Juce_SketchRackAudioProcessorEditor (Juce_S
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     
-    setSize (1400, 1000);
+    setSize (1800, 1000);
     setResizable(true, false);
     addAndMakeVisible(rackViewport);
 
-    addAndMakeVisible(moduleBrowser);
-    moduleBrowser.SetOpenState(false);
+
+    addAndMakeVisible(popups);
 
 
 
@@ -39,6 +39,7 @@ Juce_SketchRackAudioProcessorEditor::Juce_SketchRackAudioProcessorEditor (Juce_S
 
     audioProcessor.SetRackView(&rack);
     audioProcessor.SetProcessingManager(&rack.processingManager);
+
 }
 
 Juce_SketchRackAudioProcessorEditor::~Juce_SketchRackAudioProcessorEditor()
@@ -60,14 +61,15 @@ void Juce_SketchRackAudioProcessorEditor::resized()
     headerBar.setBounds(getLocalBounds().removeFromTop(40));
     rackViewport.setBounds(getLocalBounds()); // Fill the plugin window
 
-    moduleBrowser.setBounds(rackViewport.getLocalBounds().withTrimmedTop(headerBar.getHeight()).reduced(100, 50));
+    popups.setBounds(getLocalBounds());
+
 }
 
 bool Juce_SketchRackAudioProcessorEditor::keyPressed(const juce::KeyPress& key)
 {
     if (key == juce::KeyPress::escapeKey)
     {
-        NewModulePopup::SetOpenState(false);
+        Popups::ClosePopup();
         return true;
     }
 

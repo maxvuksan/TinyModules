@@ -6,6 +6,12 @@
   <MAINGROUP id="a956Ym" name="Juce_SketchRack">
     <GROUP id="{E5BA0798-C99E-B14A-9E1F-BD9FCAE25256}" name="Source">
       <GROUP id="{A670713F-DE3C-8585-F43F-C2A6DE1CDC3A}" name="UI">
+        <FILE id="VDqdOc" name="Popup_Settings.cpp" compile="1" resource="0"
+              file="Source/Popup_Settings.cpp"/>
+        <FILE id="gTpUsP" name="Popup_Settings.h" compile="0" resource="0"
+              file="Source/Popup_Settings.h"/>
+        <FILE id="rjU1tj" name="Popups.cpp" compile="1" resource="0" file="Source/Popups.cpp"/>
+        <FILE id="j6rK72" name="Popups.h" compile="0" resource="0" file="Source/Popups.h"/>
         <FILE id="ycCLao" name="SearchBar.cpp" compile="1" resource="0" file="Source/SearchBar.cpp"/>
         <FILE id="Zx8xvq" name="SearchBar.h" compile="0" resource="0" file="Source/SearchBar.h"/>
         <FILE id="v0rhBz" name="TextList.cpp" compile="1" resource="0" file="Source/TextList.cpp"/>
@@ -14,12 +20,12 @@
         <FILE id="ZijB53" name="HeaderBar.h" compile="0" resource="0" file="Source/HeaderBar.h"/>
         <FILE id="w7OnGp" name="FloatingBlockComponent.h" compile="0" resource="0"
               file="Source/FloatingBlockComponent.h"/>
-        <FILE id="zEw3Bm" name="NewModulePopup.cpp" compile="1" resource="0"
-              file="Source/NewModulePopup.cpp"/>
+        <FILE id="zEw3Bm" name="Popup_ModuleBrowser.cpp" compile="1" resource="0"
+              file="Source/Popup_ModuleBrowser.cpp"/>
         <FILE id="YzWLlv" name="SelectionComponent.h" compile="0" resource="0"
               file="Source/SelectionComponent.h"/>
-        <FILE id="YajUwJ" name="NewModulePopup.h" compile="0" resource="0"
-              file="Source/NewModulePopup.h"/>
+        <FILE id="YajUwJ" name="Popup_ModuleBrowser.h" compile="0" resource="0"
+              file="Source/Popup_ModuleBrowser.h"/>
       </GROUP>
       <FILE id="GA3U9Z" name="ModuleCache.cpp" compile="1" resource="0" file="Source/ModuleCache.cpp"/>
       <FILE id="A9fx2D" name="ModuleCache.h" compile="0" resource="0" file="Source/ModuleCache.h"/>

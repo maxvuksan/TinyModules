@@ -3,7 +3,7 @@
 #include "ModuleIncludes.h"
 #include "CustomLookAndFeel.h"
 #include "ModuleCache.h"
-#include "NewModulePopup.h"
+#include "Popups.h"
 
 RackView* RackView::instance = nullptr;
 ProcessingManager RackView::processingManager;
@@ -52,6 +52,10 @@ void RackView::Reset() {
 
     wireManager.Reset();
 
+    processingManager.SetProcessingEnabled(false);
+    processingManager.Reset();
+
+
     grid.resize(GLOBAL_RACK_WIDTH * GLOBAL_RACK_HEGHT);
 
     for (auto& cell : grid) {
@@ -72,10 +76,13 @@ void RackView::Reset() {
         }
     }
 
-    processingManager.Reset();
     zoom = 1.0f;
 
+
     repaint();
+
+    processingManager.SetProcessingEnabled(true);
+
 }
 
 
@@ -152,7 +159,7 @@ void RackView::CreateModuleFromBrowser(const juce::String& moduleName) {
 
     const ModuleData& data =  ModuleCache::GetModuleData(moduleName.toStdString());
     CreateModule(1, 1, (ModuleType)data.moduleType);
-    NewModulePopup::SetOpenState(false);
+    Popups::ClosePopup();
 }
 
 void RackView::MoveModule(int originalX, int originalY, int newX, int newY) {
@@ -253,13 +260,10 @@ void RackView::resized()
 void RackView::mouseDown(const juce::MouseEvent& e)
 {
     // dont continue if module browser is open...
-    if (NewModulePopup::GetOpenState()) {
+    if (Popups::IsPopupOpen()) {
         return;
     }
 
-    if (e.mods.isRightButtonDown()) {
-        NewModulePopup::SetOpenState(true);
-    }
 
     if (e.mods.isMiddleButtonDown()) {
 
@@ -332,7 +336,7 @@ void RackView::mouseDown(const juce::MouseEvent& e)
 
 void RackView::mouseDrag(const juce::MouseEvent& e)
 {
-    if (NewModulePopup::GetOpenState()) {
+    if (Popups::IsPopupOpen()) {
         return;
     }
 
@@ -391,9 +395,17 @@ void RackView::mouseDrag(const juce::MouseEvent& e)
 
 void RackView::mouseUp(const juce::MouseEvent& e) {
 
-    if (NewModulePopup::GetOpenState()) {
+    if (Popups::IsPopupOpen()) {
+        Popups::ClosePopup();
         return;
     }
+    else {
+        if (e.mods.isRightButtonDown()) {
+            Popups::OpenPopup(POPUP_BROWSER);
+        }
+    }
+
+
 
     if (e.mods.isMiddleButtonDown()) {
         MoveSelectedModules();

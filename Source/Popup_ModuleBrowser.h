@@ -8,27 +8,19 @@
 /*
 	Acts as a module browser (select a new module to add to rack)
 */
-class NewModulePopup : public juce::Component {
+class Popup_ModuleBrowser : public juce::Component {
 
 	public:
 
-		NewModulePopup();
+		Popup_ModuleBrowser();
 
 		void paint(juce::Graphics& g);
 		void resized();
 
 		void FilterModules(const juce::String& searchQuery);
 
-
-		static void SetOpenState(bool state);
-		static bool GetOpenState();
-		static NewModulePopup* GetInstance();
-
 	private:
 
-		bool open;
-		static NewModulePopup* instance;
-		
 		std::vector<juce::String> filteredModules;
 
 		SearchBar searchBar;

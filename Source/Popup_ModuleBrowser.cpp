@@ -1,12 +1,9 @@
-#include "NewModulePopup.h"
+#include "Popup_ModuleBrowser.h"
 #include "ModuleCache.h"
 #include "RackView.h"
 
-NewModulePopup* NewModulePopup::instance;
 
-NewModulePopup::NewModulePopup() {
-
-	instance = this;
+Popup_ModuleBrowser::Popup_ModuleBrowser() {
 
 	textList.SetItems({ });
 
@@ -25,22 +22,29 @@ NewModulePopup::NewModulePopup() {
 	searchBar.onSearchChanged = [this](const juce::String& text) {
 		FilterModules(text);
 	};
+
+
+
+
+
 }
 
 
-void NewModulePopup::paint(juce::Graphics& g) {
+void Popup_ModuleBrowser::paint(juce::Graphics& g) {
 
 	g.setColour(CustomLookAndFeel::GetTheme()->colour_headerBar);
 	g.fillRect(getLocalBounds());
 }
 
-void NewModulePopup::resized() {
+void Popup_ModuleBrowser::resized() {
 
 	searchBar.setBounds(getLocalBounds().reduced(20).removeFromTop(25));
-	listBox.setBounds(getLocalBounds().reduced(20).withTrimmedTop(60).removeFromLeft(300));
+	listBox.setBounds(getLocalBounds().reduced(20).withTrimmedTop(50));
+
+	FilterModules(searchBar.GetValue());
 }
 
-void NewModulePopup::FilterModules(const juce::String& searchQuery) {
+void Popup_ModuleBrowser::FilterModules(const juce::String& searchQuery) {
 
 	filteredModules.clear();
 
@@ -48,7 +52,7 @@ void NewModulePopup::FilterModules(const juce::String& searchQuery) {
 
 		juce::String modName(modData.first);
 
-		if (modName.containsIgnoreCase(searchQuery)) {
+		if (searchQuery == "" || searchQuery == " " || modName.containsIgnoreCase(searchQuery)) {
 			// search matches this module...
 
 			filteredModules.push_back(modName);
@@ -58,19 +62,4 @@ void NewModulePopup::FilterModules(const juce::String& searchQuery) {
 	textList.SetItems(filteredModules);
 	listBox.updateContent();
 	listBox.repaint();
-}
-
-
-void NewModulePopup::SetOpenState(bool state) {
-	instance->open = state;
-	instance->setVisible(state);
-	instance->setWantsKeyboardFocus(state);
-}
-
-NewModulePopup* NewModulePopup::GetInstance() {
-	return instance;
-}
-
-bool NewModulePopup::GetOpenState() {
-	return instance->open;
 }

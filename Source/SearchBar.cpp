@@ -33,6 +33,10 @@ bool SearchBar::keyPressed(const juce::KeyPress& key)
     return false;
 }
 
+juce::String SearchBar::GetValue() {
+
+    return searchBox.getTextValue().toString();
+}
 
 void SearchBar::resized()
 {

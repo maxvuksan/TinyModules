@@ -20,6 +20,8 @@ class SearchBar : public juce::Component
         */
         std::function<void(const juce::String&)> onSearchChanged;
 
+        juce::String GetValue();
+
     private:
         juce::TextEditor searchBox;
 

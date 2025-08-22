@@ -1,6 +1,7 @@
 
 #include "HeaderBar.h"
 #include "SerializerManager.h"
+#include "Popups.h"
 
 HeaderBar::HeaderBar() {
 
@@ -66,13 +67,18 @@ void HeaderBar::ShowLoadDialog() {
 void HeaderBar::ShowMenuCallback() {
 
     juce::PopupMenu menu;
-    menu.addItem("New Project...", []() { juce::Logger::outputDebugString("New Project clicked"); });
-    
+
+    menu.addItem("New Patch...", []() { juce::Logger::outputDebugString("New Project clicked"); });
     menu.addItem("Load Patch...", [this]() { this->ShowLoadDialog(); });
     menu.addItem("Save Patch...", [this]() { this->ShowSaveDialog(); });
 
     menu.addSeparator();
-    //menu.addItem("Quit", []() { juce::JUCEApplicationBase::quit(); });
+
+    menu.addItem("Settings", [this]() { Popups::OpenPopup(POPUP_SETTINGS); });
+
+    menu.addSeparator();
+
+    menu.addItem("Quit", [this]() {});
 
     menu.showMenuAsync(juce::PopupMenu::Options().withTargetComponent(&menuButton));
 }   

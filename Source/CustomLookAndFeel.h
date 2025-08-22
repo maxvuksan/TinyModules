@@ -5,7 +5,7 @@
 
 struct CustomTheme {
 
-    juce::Colour colour_headerBar = juce::Colour::fromRGB(19 * 0.45, 22 * 0.45, 33 * 0.45);
+    juce::Colour colour_headerBar = juce::Colour::fromRGB(28, 29, 41);
     juce::Colour colour_headerBarText = juce::Colour::fromRGB(255, 255, 255);
 
     juce::Colour colour_backgroundRackOdd = juce::Colour::fromRGB(19 * 0.7, 22 * 0.7, 33 * 0.7);
@@ -22,6 +22,7 @@ struct CustomTheme {
     juce::Colour colour_blockOutline = juce::Colour::fromRGBA(68, 78, 127, 0);
     juce::Colour colour_blockFill = juce::Colour::fromRGB(28, 29, 41);
     juce::Colour colour_blockFillDark = juce::Colour::fromRGB(55, 53, 89);
+    juce::Colour colour_blockFillLight = juce::Colour::fromRGB(28 + 15, 29 + 15, 41 + 13);
 
     juce::Colour colour_floatingBlock = juce::Colour::fromRGB(33, 35, 60);
 
@@ -56,6 +57,9 @@ class CustomLookAndFeel : public juce::LookAndFeel_V4
         ~CustomLookAndFeel();
         juce::Typeface::Ptr getTypefaceForFont(const juce::Font& font) override;
 
+
+
+
         // Style overrides ______________________________________________________________
 
         void drawButtonBackground(juce::Graphics& g,
@@ -69,6 +73,25 @@ class CustomLookAndFeel : public juce::LookAndFeel_V4
             bool shouldDrawButtonAsHighlighted,
             bool shouldDrawButtonAsDown) override;
 
+        int getPopupMenuBorderSize() override;
+
+        juce::Font getPopupMenuFont() override;
+
+        void getIdealPopupMenuItemSize(const juce::String& text, bool isSeparator,
+            int standardHeight, int& idealWidth, int& idealHeight) override;
+
+        void drawPopupMenuBackground(juce::Graphics& g, int width, int height) override;
+
+        void drawPopupMenuItem(juce::Graphics& g, const juce::Rectangle<int>& area, bool isSeparator, bool isActive,
+            bool isHighlighted, bool isTicked, bool hasSubMenu, const juce::String& text,
+            const juce::String& shortcutKeyText, const juce::Drawable* icon,
+            const juce::Colour* textColour) override;
+
+        void fillTextEditorBackground(juce::Graphics&, int w, int h, juce::TextEditor&) override;
+
+        void drawTextEditorOutline(juce::Graphics&, int w, int h, juce::TextEditor&) override;
+
+
     private:
 
         // should be called after JUCE has been setup
@@ -76,5 +99,8 @@ class CustomLookAndFeel : public juce::LookAndFeel_V4
         // should be called before JUCE has fully shutdown
         static void Destruct();
 
+        void ApplyCustomTheme();
+
+        static CustomLookAndFeel instance;
         static CustomTheme* theme;
 };

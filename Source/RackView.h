@@ -104,7 +104,6 @@ class RackView : public juce::Component
         Module* outputBlock = nullptr;
 
     private:
-        
 
         RackLODFactor lodFactor;
         CustomLookAndFeel customLookAndFeel;
