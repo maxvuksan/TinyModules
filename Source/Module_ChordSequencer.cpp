@@ -24,10 +24,10 @@ Module_ChordSequencer::Module_ChordSequencer() : Module(8, "chords") {
     knobConfig.max = 4;
     knobConfig.increment = 1;
 
-    Component_CreateKnob("oct#0", 0, 5, &knobConfig);
+    Component_CreateKnob("oct#0", 0, 5, &knobConfig); 
     Component_CreateKnob("oct#1", 2, 5, &knobConfig);
     Component_CreateKnob("oct#2", 4, 5, &knobConfig);
-    Component_CreateKnob("oct#4", 6, 5, &knobConfig);
+    Component_CreateKnob("oct#3", 6, 5, &knobConfig);
 }
 
 juce::var Module_ChordSequencer::SerializeCustom()
