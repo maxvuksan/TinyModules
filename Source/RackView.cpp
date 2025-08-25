@@ -487,6 +487,12 @@ void RackView::MoveSelectedModules() {
     selectedModules.clear();
 }
 
+void RackView::ReactToCanConnectToKnobs(bool canConnectToKnobs) {
+
+    repaint();
+}
+
+
 void RackView::CalculateSelectedModules() {
 
     selectedModules.clear();

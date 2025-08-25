@@ -64,6 +64,12 @@ class RackView : public juce::Component
         void CalculateSelectedModules();
         void MoveSelectedModules();
 
+
+        /*
+            is called whenever the value of WireManager::canConnectToKnobs changes, this function will trigger repaint on modules to show the correct knob overlay
+        */
+        void ReactToCanConnectToKnobs(bool canConnectToKnobs);
+
         /* 
             enables / disables the floating block footprint, floating block refers to the ui shown when a block is moving positions
         */

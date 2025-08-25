@@ -16,6 +16,8 @@ class WireManager : public juce::Component
         WireSocket* sourceSocket = nullptr;
         WireComponent* currentWire = nullptr;
         std::vector<WireAttachedToSocket> movedWires;
+
+        bool canConnectToKnobs = false; // if the socket we are pullin from is an output this is set to true, only output signals can connect to knobs
     };
 
     public:
@@ -35,12 +37,17 @@ class WireManager : public juce::Component
 
         /*  Note: Wires can be patched to either other sockets or knobs  */
         void FinishDragAt(WireSocket* targetSocket);
-        //void FinishDragAt(Knob* knob); 
+        void FinishDragAt(Knob* knob); 
 
         /*
             mimics the act of patching a wire, is generally called when loading a save
         */
         void LoadConnectionFromSavedData(const Connection& connection);
+
+        /*
+            @returns true if we are currently dragging wires that can connect to knobs
+        */
+        bool GetCanConnectToKnob();
 
         WireComponent* CreateWire();
         void RemoveWire(WireComponent* wire);

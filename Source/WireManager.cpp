@@ -29,6 +29,19 @@ void WireManager::Reset() {
 
 void WireManager::StartWireFrom(WireSocket* fromSocket) {
     
+    RackView::instance->ClearSelections();
+
+    // is this an output socket?
+    if (!fromSocket->GetIsInput()) {
+        interactState.canConnectToKnobs = true;
+    }
+    else {
+        interactState.canConnectToKnobs = false;
+    }
+
+    RackView::instance->ReactToCanConnectToKnobs(interactState.canConnectToKnobs);
+
+
     interactState.currentWire = CreateWire();
     interactState.currentWire->SetConnectionType(fromSocket->GetConnectionType());
     interactState.sourceSocket = fromSocket;
@@ -39,6 +52,18 @@ void WireManager::StartWireFrom(WireSocket* fromSocket) {
 }
  
 void WireManager::MoveWireFrom(WireSocket* fromSocket) {
+
+    RackView::instance->ClearSelections();
+
+    // was the connected socket an input socket? (should be inverse check of StartWireFrom)
+    if (fromSocket->GetIsInput()) {
+        interactState.canConnectToKnobs = true;
+    }
+    else {
+        interactState.canConnectToKnobs = false;
+    }
+
+    RackView::instance->ReactToCanConnectToKnobs(interactState.canConnectToKnobs);
 
     interactState.mode = WireInteractionState::Moving;
 
@@ -71,13 +96,54 @@ void WireManager::UpdateDragPosition(juce::Point<float> end) {
     }
 }
 
-void WireManager::FinishDragAt(WireSocket* targetSocket) {
+void WireManager::FinishDragAt(Knob* targetKnob) {
+
+    interactState.canConnectToKnobs = false;
+    RackView::instance->ReactToCanConnectToKnobs(interactState.canConnectToKnobs);
 
     if (interactState.mode == WireInteractionState::None) {
         return;
     }
 
+    if (interactState.mode == WireInteractionState::Creating) {
 
+        interactState.mode = WireInteractionState::None;
+
+        // connection to knobs is only allowed for outgoing signals
+        if (interactState.sourceSocket->GetIsInput()) {
+
+            RemoveWire(interactState.currentWire);
+            return;
+        }
+
+
+        WireAttachedToSocket connection;
+        connection.otherSocket = nullptr;
+        connection.wire = interactState.currentWire;
+        connection.connectionType = interactState.sourceSocket->GetConnectionType();
+
+        juce::Point<float> startSocketCentre = RackView::instance->getLocalPoint(interactState.sourceSocket, interactState.sourceSocket->getLocalBounds().toFloat().getCentre());
+        juce::Point<float> endSocketCentre = RackView::instance->getLocalPoint(targetSocket, targetSocket->getLocalBounds().toFloat().getCentre());
+        interactState.currentWire->SetStartEnd(startSocketCentre, endSocketCentre);
+
+        interactState.sourceSocket->AddConnectionInProcessing(connection);
+
+        // flip for targetSocket
+        connection.otherSocket = interactState.sourceSocket;
+
+        targetSocket->AssignWireFromOtherSocket(connection);
+    }
+
+}
+
+void WireManager::FinishDragAt(WireSocket* targetSocket) {
+
+    interactState.canConnectToKnobs = false;
+    RackView::instance->ReactToCanConnectToKnobs(interactState.canConnectToKnobs);
+
+    if (interactState.mode == WireInteractionState::None) {
+        return;
+    }
 
     if (interactState.mode == WireInteractionState::Creating) {
 
@@ -161,6 +227,15 @@ void WireManager::FinishDragAt(WireSocket* targetSocket) {
 
 }
 
+bool WireManager::GetCanConnectToKnob() {
+
+    // we are not drawing a wire
+    if (interactState.mode == WireInteractionState::None) {
+        return false;
+    }
+
+    return interactState.canConnectToKnobs;
+}
 
 void WireManager::LoadConnectionFromSavedData(const Connection& connection) {
 

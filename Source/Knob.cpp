@@ -48,6 +48,19 @@ void Knob::SetManualValue(double value) {
     setValue(value);
 }
 
+void Knob::AddConnectedWire(WireSocket* otherSocket) {
+
+}
+
+void Knob::RemoveConnectedWire(WireSocket* otherSocket) {
+
+}
+
+void Knob::RemoveAllConnectedWires() {
+
+}
+
+
 void Knob::valueChanged() {
     repaint(); // Optional: call in constructor or listener
 }
@@ -80,7 +93,7 @@ void Knob::paint(juce::Graphics& g)
         arcStart,
         params.endAngleRadians + juce::MathConstants<float>::pi * 0.5f,
         true);
-    g.setColour(CustomLookAndFeel::GetTheme()->colour_knobFill.withAlpha(0.3f));
+    g.setColour(CustomLookAndFeel::GetTheme()->colour_knobFill);
     g.strokePath(backgroundArc, juce::PathStrokeType(arcThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 
     // Foreground arc (current value)

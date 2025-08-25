@@ -55,6 +55,9 @@ void Module::paint(juce::Graphics& g){
 
 
 
+
+
+
     if (RackView::instance->GetLODFactor() != LOD_CLOSE) {
         return;
     }
@@ -100,6 +103,24 @@ void Module::paintOverChildren(juce::Graphics& g) {
         g.fillRect(getLocalBounds().reduced(2.0f));
         g.setColour(CustomLookAndFeel::GetTheme()->colour_selectionOutline);
         g.drawRect(getLocalBounds().reduced(2.0f), 2);
+    }
+
+    // each knob should be drawn with a selection
+    if (WireManager::instance->GetCanConnectToKnob()) {
+
+        for (auto& knob : componentsKnobs) {
+
+            g.setColour(CustomLookAndFeel::GetTheme()->colour_selectionFill);
+            g.fillEllipse(
+                knob.second.second->getPosition().x + 2,
+                knob.second.second->getPosition().y + 7,
+                knob.second.second->getWidth() - 4, 
+                knob.second.second->getWidth() - 4);
+
+            g.setColour(CustomLookAndFeel::GetTheme()->colour_selectionOutline);
+
+        }
+
     }
 }
 

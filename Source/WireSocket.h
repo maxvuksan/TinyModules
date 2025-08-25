@@ -9,6 +9,8 @@ struct WireAttachedToSocket {
     WireComponent* wire;
     WireSocket* otherSocket = nullptr;
     ConnectionType connectionType;
+
+    Knob* otherKnob = nullptr; // only valid if this wire is connecting to a knob NOT an input socket
 };
 
 class WireSocket : public juce::Component

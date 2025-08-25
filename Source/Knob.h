@@ -16,13 +16,17 @@ struct KnobConfiguration {
     KnobColourType colourType = KNOB_COL_DEFAULT;
 };
 
+struct ConnectedWire {
+
+    WireSocket* otherSocket;
+};
+
 
 class Knob : public juce::Slider {
 
 	public:
 
         Knob();
-
         /* 
             copies and applies the parameters specified
             @param configuration 
@@ -38,11 +42,17 @@ class Knob : public juce::Slider {
         // the value manually input by the user
         void SetManualValue(double value);
 
+        void AddConnectedWire(WireSocket* otherSocket);
+        void RemoveConnectedWire(WireSocket* otherSocket);
+        void RemoveAllConnectedWires();
+
         void paint(juce::Graphics& g) override;
         void valueChanged() override;
         void mouseDown(const juce::MouseEvent& e) override;
 
     private:
+
+        std::vector<ConnectedWire> connectedWires;
 
         KnobColourType colourType;
         float defaultValue;
