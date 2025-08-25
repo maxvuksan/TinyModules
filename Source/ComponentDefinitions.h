@@ -37,6 +37,6 @@ struct ComponentScope {
     {
         visualiser.setBufferSize(128);  // Set size as needed
         visualiser.setSamplesPerBlock(16); // or match your processing block size
-        visualiser.setColours(juce::Colours::black, GLOBAL_WIRE_COLOUR_POOL[0]);
+        //visualiser.setColours(juce::Colours::black, GLOBAL_WIRE_COLOUR_POOL[0]);
     }
 };

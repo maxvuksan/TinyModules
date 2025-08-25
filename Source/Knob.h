@@ -1,6 +1,8 @@
 #pragma once
 #include <JuceHeader.h>
+#include "WireSocket.h"
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "KnobModulationWheel.h"
 
 enum KnobColourType {
     KNOB_COL_DEFAULT,               // default knob colour
@@ -16,15 +18,16 @@ struct KnobConfiguration {
     KnobColourType colourType = KNOB_COL_DEFAULT;
 };
 
-struct ConnectedWire {
-
-    WireSocket* otherSocket;
-};
-
 
 class Knob : public juce::Slider {
 
 	public:
+
+        struct ConnectedWire {
+
+            WireSocket* otherSocket;
+            KnobModulationWheel* modulationWheel;
+        };
 
         Knob();
         /* 
@@ -46,7 +49,11 @@ class Knob : public juce::Slider {
         void RemoveConnectedWire(WireSocket* otherSocket);
         void RemoveAllConnectedWires();
 
+        void PositionModulationWheels();
+
         void paint(juce::Graphics& g) override;
+        void moved() override;
+        void resized() override;
         void valueChanged() override;
         void mouseDown(const juce::MouseEvent& e) override;
 

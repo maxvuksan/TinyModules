@@ -334,6 +334,11 @@ Knob& Module::Component_CreateKnob(const std::string& label, int x, int y, KnobC
     auto& slider = it->second.second;
     slider->Configure(&finalConfig);
 
+    for (int i = 0; i < rand() % 7; i++) {
+        slider->AddConnectedWire(nullptr);
+    }
+
+
     addAndMakeVisible(*slider);
     const auto& config = it->second.first;
     SetComponentBounds(*slider, config.coordinate.x, config.coordinate.y, config.size.x, config.size.y);

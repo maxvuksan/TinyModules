@@ -66,6 +66,10 @@
               file="Source/EnvelopeVisual.h"/>
         <FILE id="cEXL7h" name="Knob.cpp" compile="1" resource="0" file="Source/Knob.cpp"/>
         <FILE id="jEv9lQ" name="Knob.h" compile="0" resource="0" file="Source/Knob.h"/>
+        <FILE id="wxK0MD" name="KnobModulationWheel.cpp" compile="1" resource="0"
+              file="Source/KnobModulationWheel.cpp"/>
+        <FILE id="piq0J5" name="KnobModulationWheel.h" compile="0" resource="0"
+              file="Source/KnobModulationWheel.h"/>
         <FILE id="bFsFl8" name="PianoSwitch.cpp" compile="1" resource="0" file="Source/PianoSwitch.cpp"/>
         <FILE id="yA1AP6" name="PianoSwitch.h" compile="0" resource="0" file="Source/PianoSwitch.h"/>
         <FILE id="YxWVD7" name="Switch.cpp" compile="1" resource="0" file="Source/Switch.cpp"/>

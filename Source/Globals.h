@@ -26,13 +26,6 @@
 
 #define GLOBAL_WIRE_SAG				3.5f
 
-const std::vector<juce::Colour> GLOBAL_WIRE_COLOUR_POOL = {
-	juce::Colour::fromRGB(255, 56, 112),
-	juce::Colour::fromRGB(56, 156, 255),
-	juce::Colour::fromRGB(240, 152, 53),
-	juce::Colour::fromRGB(132, 92, 242)
-};
-
 #define GLOBAL_C4_FREQUENCY			261.63f
 
 #define GLOBAL_BG_COLOUR juce::Colour::fromRGB(182, 184, 192)

@@ -2,6 +2,7 @@
 #include <JuceHeader.h>
 #include "WireComponent.h"
 #include "WireSocket.h"
+#include "KnobModulationWheel.h"
 
 /*
     Is the parent to all wire visuals, additionally manages the logic for drawing out and connecting wires
@@ -52,6 +53,9 @@ class WireManager : public juce::Component
         WireComponent* CreateWire();
         void RemoveWire(WireComponent* wire);
 
+        KnobModulationWheel* CreateModulationWheel();
+        void RemoveModulationWheel(KnobModulationWheel* wheel);
+
         static WireManager* instance;
 
     private:
@@ -60,6 +64,15 @@ class WireManager : public juce::Component
 
         static int currentWireColourIndex;
 
+        /*
+            wires between sockets (drawn as bezier curves)
+        */
         std::vector<std::unique_ptr<WireComponent>> wires;
         std::vector<std::unique_ptr<WireComponent>> vacantWires;
+
+        /*
+            modulation wheels placed above knobs (when a wire is patched into a knob)
+        */
+        std::vector<std::unique_ptr<KnobModulationWheel>> modulationWheels;
+        std::vector<std::unique_ptr<KnobModulationWheel>> vacantModulationWheels;
 };

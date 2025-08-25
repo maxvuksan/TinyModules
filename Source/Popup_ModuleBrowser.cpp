@@ -34,9 +34,6 @@ void Popup_ModuleBrowser::paint(juce::Graphics& g) {
 
 	g.setColour(CustomLookAndFeel::GetTheme()->colour_headerBar);
 	g.fillRect(getLocalBounds());
-
-	g.setColour(CustomLookAndFeel::GetTheme()->colour_knobPointer);
-	g.drawRect(getLocalBounds());
 }
 
 void Popup_ModuleBrowser::resized() {

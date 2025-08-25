@@ -20,6 +20,7 @@ void Popups::resized() {
     int headerSize = 40;
     popupBrowser.setBounds(getLocalBounds().withTrimmedTop(headerSize).reduced(700, 50));
     popupSettings.setBounds(getLocalBounds().withTrimmedTop(headerSize).reduced(700, 50));
+
 }
 
 void Popups::paint(juce::Graphics& g) {

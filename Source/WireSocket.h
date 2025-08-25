@@ -4,6 +4,7 @@
 
 class Module;
 class WireSocket;
+class Knob;
 
 struct WireAttachedToSocket {
     WireComponent* wire;

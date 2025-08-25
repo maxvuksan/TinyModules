@@ -3,6 +3,11 @@
 #include "Popup_Settings.h"
 
 
+WireComponent::WireComponent() {
+
+    setInterceptsMouseClicks(false, false);
+}
+
 void WireComponent::SetStartEnd(juce::Point<float> start, juce::Point<float> end)
 {
     startPos = start;
@@ -50,7 +55,7 @@ void WireComponent::SetConnectionType(ConnectionType connectionType) {
 
 void WireComponent::paint(juce::Graphics& g)
 {
-    g.setColour(GLOBAL_WIRE_COLOUR_POOL[colourIndex]);
+    g.setColour(CustomLookAndFeel::GetTheme()->colour_wires[colourIndex]);
 
     juce::Path path;
     auto p1 = startPos;

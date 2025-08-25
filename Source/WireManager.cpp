@@ -8,7 +8,7 @@ WireManager* WireManager::instance = nullptr;
 
 WireManager::WireManager() {
 
-    setInterceptsMouseClicks(false, false);
+    setInterceptsMouseClicks(false, true);
     instance = this;
 }
 
@@ -112,26 +112,11 @@ void WireManager::FinishDragAt(Knob* targetKnob) {
         // connection to knobs is only allowed for outgoing signals
         if (interactState.sourceSocket->GetIsInput()) {
 
-            RemoveWire(interactState.currentWire);
+            //RemoveWire(interactState.currentWire);
             return;
         }
 
 
-        WireAttachedToSocket connection;
-        connection.otherSocket = nullptr;
-        connection.wire = interactState.currentWire;
-        connection.connectionType = interactState.sourceSocket->GetConnectionType();
-
-        juce::Point<float> startSocketCentre = RackView::instance->getLocalPoint(interactState.sourceSocket, interactState.sourceSocket->getLocalBounds().toFloat().getCentre());
-        juce::Point<float> endSocketCentre = RackView::instance->getLocalPoint(targetSocket, targetSocket->getLocalBounds().toFloat().getCentre());
-        interactState.currentWire->SetStartEnd(startSocketCentre, endSocketCentre);
-
-        interactState.sourceSocket->AddConnectionInProcessing(connection);
-
-        // flip for targetSocket
-        connection.otherSocket = interactState.sourceSocket;
-
-        targetSocket->AssignWireFromOtherSocket(connection);
     }
 
 }
@@ -279,7 +264,6 @@ WireComponent* WireManager::CreateWire()
     }
 
     wire->SetWireColourIndex(currentWireColourIndex);
-    wire->setVisible(true); // Ensure the wire is visible again
 
     WireComponent* rawPtr = wire.get(); // Save raw pointer before transferring ownership
 
@@ -287,7 +271,7 @@ WireComponent* WireManager::CreateWire()
     addAndMakeVisible(rawPtr);
 
     currentWireColourIndex++;
-    currentWireColourIndex %= GLOBAL_WIRE_COLOUR_POOL.size();
+    currentWireColourIndex %= CustomLookAndFeel::GetTheme()->colour_wires.size();
 
     return rawPtr;
 }
@@ -308,6 +292,44 @@ void WireManager::RemoveWire(WireComponent* wire) {
 
             // 3. Remove from active list
             wires.erase(wires.begin() + i);
+            return;
+        }
+    }
+}
+
+KnobModulationWheel* WireManager::CreateModulationWheel() {
+
+    std::unique_ptr<KnobModulationWheel> wheel;
+
+    // Reuse a wire from the vacant pool if available
+    if (!vacantModulationWheels.empty()) {
+
+        wheel = std::move(vacantModulationWheels.back());
+        vacantModulationWheels.pop_back();
+    }
+    else {
+        wheel = std::make_unique<KnobModulationWheel>();
+    }
+
+    KnobModulationWheel* rawPtr = wheel.get(); // Save raw pointer before transferring ownership
+
+    modulationWheels.push_back(std::move(wheel));
+
+    addAndMakeVisible(rawPtr);
+
+    return rawPtr;
+}
+
+void WireManager::RemoveModulationWheel(KnobModulationWheel* wheel) {
+
+    for (int i = (int)modulationWheels.size() - 1; i >= 0; --i) {
+
+        if (modulationWheels[i].get() == wheel) {
+
+            removeChildComponent(wheel);
+            wheel->setVisible(false);
+            vacantModulationWheels.push_back(std::move(modulationWheels[i]));
+            modulationWheels.erase(modulationWheels.begin() + i);
             return;
         }
     }

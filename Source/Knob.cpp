@@ -50,23 +50,85 @@ void Knob::SetManualValue(double value) {
 
 void Knob::AddConnectedWire(WireSocket* otherSocket) {
 
+    // is connection already present...?
+
+    for (int i = 0; i < connectedWires.size(); i++) {
+
+        if (connectedWires[i].otherSocket == otherSocket) {
+            //return;
+        }
+    }
+
+    ConnectedWire& w = connectedWires.emplace_back();
+    w.otherSocket = otherSocket;
+    w.modulationWheel = WireManager::instance->CreateModulationWheel();
+
+    PositionModulationWheels();
 }
 
+
 void Knob::RemoveConnectedWire(WireSocket* otherSocket) {
+ 
+    for (int i = 0; i < connectedWires.size(); i++) {
+
+        if (connectedWires[i].otherSocket == otherSocket) {
+            
+            connectedWires.erase(connectedWires.begin() + i);
+            return;
+        }
+    }
+
+    PositionModulationWheels();
 
 }
 
 void Knob::RemoveAllConnectedWires() {
 
+    for (int i = 0; i < connectedWires.size(); i++) {
+        //...
+    }
+
+    connectedWires.clear();
+
+    PositionModulationWheels();
+}
+
+void Knob::PositionModulationWheels() {
+
+    // position modulation wheels in a grid above the knob
+
+    int margin = 1;
+    int itemsPerRow = 3;
+
+    const auto knobInRack = RackView::instance->getLocalArea(this, getLocalBounds());
+
+    for (int i = 0; i < connectedWires.size(); i++) {
+
+        connectedWires[i].modulationWheel->setCentrePosition(
+            knobInRack.getPosition()
+            + juce::Point<int>{i * (margin + connectedWires[i].modulationWheel->getWidth()), 0
+        });
+ 
+        connectedWires[i].modulationWheel->repaint();
+    }
+
 }
 
 
 void Knob::valueChanged() {
-    repaint(); // Optional: call in constructor or listener
+    repaint(); 
+}
+
+void Knob::moved() {
+    PositionModulationWheels();
+}
+void Knob::resized() {
+    PositionModulationWheels();
 }
 
 void Knob::paint(juce::Graphics& g)
 {
+    PositionModulationWheels();
     auto bounds = getLocalBounds().toFloat();
     const float width = bounds.getWidth();
     const float height = bounds.getHeight();

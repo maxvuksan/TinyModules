@@ -41,6 +41,23 @@ struct CustomTheme {
     juce::Typeface::Ptr typeface;   
     juce::Font font;    // applied from typeface
 
+
+    // NOTE: the size of the wire colour array should be the same between themes.
+    const std::vector<juce::Colour> colour_wires = {
+        juce::Colour::fromRGB(255, 56, 112),
+        juce::Colour::fromRGB(56, 156, 255),
+        juce::Colour::fromRGB(240, 152, 53),
+        juce::Colour::fromRGB(132, 92, 242)
+    };
+
+    const std::vector<juce::Colour> colour_wiresOff = {
+        juce::Colour::fromRGB(255 / 3, 56 / 3, 112 / 3),
+        juce::Colour::fromRGB(56 / 3, 156 / 3, 255 / 3),
+        juce::Colour::fromRGB(240 / 3, 152 / 3, 53 / 3),
+        juce::Colour::fromRGB(132 / 3, 92 / 3, 242 / 3)
+    };
+
+
     float borderRadius = 1.0f;
 };
 

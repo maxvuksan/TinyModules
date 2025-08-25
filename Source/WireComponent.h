@@ -9,6 +9,8 @@ class WireComponent : public juce::Component
 {
     public:
 
+        WireComponent();
+
         void SetStartEnd(juce::Point<float> start, juce::Point<float> end);
 
         void SetWireColourIndex(int index);
