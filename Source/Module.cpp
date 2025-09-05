@@ -246,72 +246,18 @@ WireSocket* Module::GetSocketFromDspIndex(int dspIndex, bool isInput) {
 void Module::mouseDown(const juce::MouseEvent& e)
 {
     return;
-    // Only start dragging if we didn't click on an excluded child
-    if (e.eventComponent && e.eventComponent != this) {
-        return;
-    }
-
-    if (!e.mods.isMiddleButtonDown()) {
-        return;
-    }
-
-
-    mouseMovingBlockStartPos = e.getPosition();
 
 }
 
 void Module::mouseDrag(const juce::MouseEvent& e)
 {
     return;
-    if (!e.mods.isMiddleButtonDown()) {
-        return;
-    }
-
-
-    // If we didn't click on a slider/socket, perform drag
-    if (!e.eventComponent || e.eventComponent == this)
-    {
-        auto screenPos = e.getScreenPosition();
-        auto parentPos = getParentComponent()->getLocalPoint(nullptr, screenPos);
-        // Offset by the point we first grabbed the block
-        auto newTopLeft = parentPos - mouseMovingBlockStartPos;
-
-           
-        newRackPosition.x = round(newTopLeft.x / (float)GLOBAL_BLOCK_WIDTH_UNIT);
-        newRackPosition.y = round(newTopLeft.y / (float)(GLOBAL_BLOCK_HEIGHT + GLOBAL_BLOCK_HEIGHT_PADDING));
-
-        setTopLeftPosition(newTopLeft);
-
-        RackView::instance->SetFloatingBlockFootprintShow(true);
-        RackView::instance->SetFloatingBlockFootprint(newRackPosition, widthUnits);
-        
-        // since we are moving the module we should also trigger wire redraws
-        for (auto& socket : componentsSockets) {
-            socket.second.second->RecomputeWireGraphics();
-        }
-    }
 }
 
 void Module::mouseUp(const juce::MouseEvent& e) {
 
     return;
-    if (!e.mods.isMiddleButtonDown()) {
-        return;
-    }
 
-
-    RackView::instance->MoveModule(rackXPosition, rackYPosition, newRackPosition.x, newRackPosition.y);
-    RackView::instance->SetFloatingBlockFootprintShow(false);
-    
-    setTopLeftPosition({
-        newRackPosition.x * GLOBAL_BLOCK_WIDTH_UNIT, 
-        newRackPosition.y * (GLOBAL_BLOCK_HEIGHT + GLOBAL_BLOCK_HEIGHT_PADDING)
-    });
-
-    // since we are moving the module we should also trigger wire redraws
-    for (auto& socket : componentsSockets) {
-        socket.second.second->RecomputeWireGraphics();
-    }
 }
 
 
@@ -333,10 +279,8 @@ Knob& Module::Component_CreateKnob(const std::string& label, int x, int y, KnobC
 
     auto& slider = it->second.second;
     slider->Configure(&finalConfig);
-
-    for (int i = 0; i < rand() % 7; i++) {
-        slider->AddConnectedWire(nullptr);
-    }
+    slider->SetModule(this);
+    slider->SetLabel(label);
 
 
     addAndMakeVisible(*slider);
@@ -429,10 +373,10 @@ void Module::SetComponentBounds(juce::Component& component, int x, int y, int wi
     );
 }
 
-double Module::Component_GetKnobValue(const std::string& label) {
+double Module::Component_GetKnobValue(const std::string& label, int sampleIndex) {
 
     if (componentsKnobs.find(label) != componentsKnobs.end()) {
-        return componentsKnobs[label].second->getValue();
+        return componentsKnobs[label].second->GetValue(sampleIndex);
     }
     return 0;
 }

@@ -198,8 +198,10 @@ bool RackView::CanMoveModule(int newX, int newY, const RackModule& module) {
     {
         for (int x = 0; x < module.width; x++) {
             
+            const auto& cell = grid[GI(newX + x, newY)];
+
             // a block exists at this location
-            if (grid[GI(newX + x, newY)].blockReference != nullptr) {
+            if (cell.blockReference != nullptr || cell.occupiedByBlock) {
                 return false;
             }
         }
@@ -269,8 +271,8 @@ void RackView::mouseDown(const juce::MouseEvent& e)
 
         movingSelectedModules = false;
 
-        int gridX = (int)(e.position.x / GLOBAL_BLOCK_WIDTH_UNIT);
-        int gridY = (int)(e.position.y / (GLOBAL_BLOCK_HEIGHT + GLOBAL_BLOCK_HEIGHT_PADDING));
+        int gridX = (int)(std::floor(e.position.x / (float)GLOBAL_BLOCK_WIDTH_UNIT));
+        int gridY = (int)(std::floor(e.position.y / (float)(GLOBAL_BLOCK_HEIGHT + GLOBAL_BLOCK_HEIGHT_PADDING)));
 
         // Check if mouse is inside any selected module
         for (auto* module : selectedModules)
@@ -286,7 +288,7 @@ void RackView::mouseDown(const juce::MouseEvent& e)
             }
         }
 
-        // we did not hit one of our selected modules
+        // we did not hit one of our selected modules, 
         if (!movingSelectedModules) {
             // Clamp to grid bounds
             if (gridX >= 0 && gridX < GLOBAL_RACK_WIDTH &&
@@ -295,7 +297,7 @@ void RackView::mouseDown(const juce::MouseEvent& e)
                 RackModule* cell = &grid[GI(gridX, gridY)];
 
                 // step left until we find the first cell of the module
-                while (cell->occupiedByBlock && cell->blockReference == false && gridX > 0) {
+                while (cell->occupiedByBlock && cell->blockReference == nullptr && gridX > 0) {
                     gridX--;
                     cell = &grid[GI(gridX, gridY)];
                 }
@@ -375,7 +377,9 @@ void RackView::mouseDrag(const juce::MouseEvent& e)
                 for (auto& socket : selectedModules[i]->GetSockets()) {
                     socket.second.second->RecomputeWireGraphics();
                 }
-            
+                for (auto& knob : selectedModules[i]->GetKnobs()) {
+                    knob.second.second->RecomputeWireGraphics();
+                }
             }
         }
         else {
@@ -410,7 +414,9 @@ void RackView::mouseUp(const juce::MouseEvent& e) {
     if (e.mods.isMiddleButtonDown()) {
         MoveSelectedModules();
     }
-    CalculateSelectedModules();
+    else {
+        CalculateSelectedModules();
+    }
 
 
 }
@@ -476,6 +482,9 @@ void RackView::MoveSelectedModules() {
         for (auto& socket : selectedModules[i]->GetSockets()) {
             socket.second.second->RecomputeWireGraphics();
         }
+        for (auto& knob : selectedModules[i]->GetKnobs()) {
+            knob.second.second->RecomputeWireGraphics();
+        }
 
         MoveModule( selectedModules[i]->GetRackPosition().x,
                     selectedModules[i]->GetRackPosition().y,
@@ -507,11 +516,14 @@ void RackView::CalculateSelectedModules() {
 
     juce::Rectangle<float> logicalSelection(logicalX, logicalY, logicalW, logicalH);
 
-    // Convert to array-space bounds (snap to rack cell grid)
-    int gridX1 = std::clamp((int)(logicalSelection.getX() / GLOBAL_BLOCK_WIDTH_UNIT), 0, GLOBAL_RACK_WIDTH - 1);
-    int gridY1 = std::clamp((int)(logicalSelection.getY() / (GLOBAL_BLOCK_HEIGHT + GLOBAL_BLOCK_HEIGHT_PADDING)), 0, GLOBAL_RACK_HEGHT - 1);
-    int gridX2 = std::clamp((int)((logicalSelection.getRight()) / GLOBAL_BLOCK_WIDTH_UNIT), 0, GLOBAL_RACK_WIDTH - 1);
-    int gridY2 = std::clamp((int)((logicalSelection.getBottom()) / (GLOBAL_BLOCK_HEIGHT + GLOBAL_BLOCK_HEIGHT_PADDING)), 0, GLOBAL_RACK_HEGHT - 1);
+    constexpr float eps = 1e-4f;
+    const float unitX = (float)GLOBAL_BLOCK_WIDTH_UNIT;
+    const float unitY = (float)(GLOBAL_BLOCK_HEIGHT + GLOBAL_BLOCK_HEIGHT_PADDING);
+
+    int gridX1 = std::clamp((int)std::floor(logicalSelection.getX() / unitX), 0, GLOBAL_RACK_WIDTH - 1);
+    int gridY1 = std::clamp((int)std::floor(logicalSelection.getY() / unitY), 0, GLOBAL_RACK_HEGHT - 1);
+    int gridX2 = std::clamp((int)std::floor((logicalSelection.getRight() - eps) / unitX), 0, GLOBAL_RACK_WIDTH - 1);
+    int gridY2 = std::clamp((int)std::floor((logicalSelection.getBottom() - eps) / unitY), 0, GLOBAL_RACK_HEGHT - 1);
 
     selectionCoordinateOrigin.setX(gridX1);
     selectionCoordinateOrigin.setY(gridY1);
@@ -529,7 +541,7 @@ void RackView::CalculateSelectedModules() {
             int tempX = x;
 
             // shift left until we find origin of module
-            while (cell->occupiedByBlock && !cell->blockReference && tempX > 0) {
+            while (cell->occupiedByBlock && cell->blockReference == nullptr && tempX > 0) {
                 tempX--;
                 cell = &grid[GI(tempX, y)];
             }

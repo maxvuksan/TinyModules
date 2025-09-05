@@ -44,10 +44,29 @@ class Knob : public juce::Slider {
 
         // the value manually input by the user
         void SetManualValue(double value);
+        
+        /*
+            @returns the value of the knob after any modulation is applied
+        */
+        double GetValue(int sampleNum);
 
-        void AddConnectedWire(WireSocket* otherSocket);
+        void RecomputeWireGraphics();
+
+        /*
+            creates a modulation wheel from a socket to this knob
+
+            @param      otherSocket         the socket outputting the modulation signal
+            @param      wireColourIndex     the colour of the wire (modulation wheel will match this colour)
+            @param      modulationValue     a default strength value assigned to the modulation wheel
+        */
+        void AddConnectedWire(WireSocket* otherSocket, int wireColourIndex = 0, float modulationValue = 0);
         void RemoveConnectedWire(WireSocket* otherSocket);
         void RemoveAllConnectedWires();
+
+        /*
+            iterates over each modulation wheel, returning the one connected to otherSocket
+        */
+        KnobModulationWheel* GetModulationWheel(WireSocket* otherOutSocket);
 
         void PositionModulationWheels();
 
@@ -57,11 +76,26 @@ class Knob : public juce::Slider {
         void valueChanged() override;
         void mouseDown(const juce::MouseEvent& e) override;
 
+        void SetModule(Module* _module) { this->module = _module; }
+        Module* GetModule() { return module; }
+
+        void SetLabel(const std::string& _label);
+        const std::string& GetLabel() { return label; }
+
     private:
 
         std::vector<ConnectedWire> connectedWires;
 
         KnobColourType colourType;
+
+        Module* module;
+        std::string label;
+
+        float modScalePositive = 0;
+        float modScaleNegative = 0;
+        double minVal;
+        double maxVal;
+
         float defaultValue;
         bool isMenuOpen = false;
         bool visuallyEnabled = false;

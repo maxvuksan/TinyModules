@@ -67,11 +67,6 @@ void Module_Oscillator::Process() {
 
     for (int osc = 0; osc < 2; osc++) {
 
-        float knobFreq = Component_GetKnobValue("freq#" + std::to_string(osc)); // Hz
-        float knobGain = Component_GetKnobValue("gain#" + std::to_string(osc)); // 0-2
-        float knobOct = Component_GetKnobValue("oct#" + std::to_string(osc));
-
-        float knobVolts = DSP::FrequencyToVoltage(knobFreq) + knobOct;
 
         for (int voice = 0; voice < numActiveVoices; voice++) {
 
@@ -82,12 +77,20 @@ void Module_Oscillator::Process() {
                 vOct = vOctBuffer[0];
             }
 
-            float totalVolts = knobVolts + vOct;
-            float freq = DSP::VoltageToFrequency(totalVolts);
-            phaseIncrement = DSP::GetPhaseIncrement(freq, sampleRate);
-
             for (int i = 0; i < numSamples; ++i)
             {
+                float knobFreq = Component_GetKnobValue("freq#" + std::to_string(osc), i); // Hz
+                float knobGain = Component_GetKnobValue("gain#" + std::to_string(osc), i); // 0-2
+                float knobOct = Component_GetKnobValue("oct#" + std::to_string(osc), i);
+
+                float knobVolts = DSP::FrequencyToVoltage(knobFreq) + knobOct;
+
+                float totalVolts = knobVolts + vOct;
+                float freq = DSP::VoltageToFrequency(totalVolts);
+                phaseIncrement = DSP::GetPhaseIncrement(freq, sampleRate);
+
+
+
                 // Generate samples
                 float sample = DSP::SampleWaveform(oscillators[osc].waveformVisual.GetWaveType(), oscillators[osc].phase[voice]);
 

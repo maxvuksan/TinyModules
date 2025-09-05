@@ -118,8 +118,10 @@ class Module : public juce::Component
 
         /*
             @returns a reference to a component with the matching label
+
+            @param sampleIndex  used to apply sample based modulation (if a modulation wire was connected)
         */
-        double      Component_GetKnobValue(const std::string& label);
+        double      Component_GetKnobValue(const std::string& label, int sampleIndex = 0);
         Knob*       Component_GetKnob(const std::string& label);
         WireSocket* Component_GetSocket(const std::string& label);
         Switch*     Component_GetSwitch(const std::string& label);
@@ -147,6 +149,7 @@ class Module : public juce::Component
         float*          GetOutputWritePtr(int dspIndex, int channel = 0);
 
         std::unordered_map<std::string, std::pair<ComponentConfig, std::unique_ptr<WireSocket>>>& GetSockets() { return componentsSockets; }
+        std::unordered_map<std::string, std::pair<ComponentConfig, std::unique_ptr<Knob>>>& GetKnobs() { return componentsKnobs; }
 
         /*
             @param  dspIndex     index of socket (input and output indicies are independent)

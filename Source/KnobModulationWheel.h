@@ -3,32 +3,35 @@
 
 class KnobModulationWheel : public juce::Component
 {
-public:
-    KnobModulationWheel();
 
-    // value in [-1.0, 1.0]  (maps to angle in [-pi, +pi])
-    void setValue(float v, juce::NotificationType nt = juce::sendNotification);
-    float getValue() const noexcept { return value; }
+    public:
+        KnobModulationWheel();
 
-    // a simple callback if you want to react
-    std::function<void(float)> onChange;
+        // value in [-1.0, 1.0]  (maps to angle in [-pi, +pi])
+        void SetValue(float v, juce::NotificationType nt = juce::sendNotification);
+        float GetValue() const noexcept { return value; }
 
-    // painting
-    void paint(juce::Graphics& g) override;
+        // callback to reach to value
+        std::function<void(float)> onValueChanged;
 
-    // interaction (rotary vertical drag style)
-    void mouseDown(const juce::MouseEvent& e) override;
-    void mouseDrag(const juce::MouseEvent& e) override;
-    void mouseDoubleClick(const juce::MouseEvent& e) override;
+        // painting
+        void paint(juce::Graphics& g) override;
 
-private:
+        // interaction (rotary vertical drag style)
+        void mouseDown(const juce::MouseEvent& e) override;
+        void mouseDrag(const juce::MouseEvent& e) override;
+        void mouseDoubleClick(const juce::MouseEvent& e) override;
 
-    int wireColourIndex = 0;
+        void SetWireColourIndex(int index);
 
-    float value = 0.0f;                  // [-1..1]
-    float startDragValue = 0.0f;
+    private:
 
-    juce::Point<int> dragStartPos{};
+        int wireColourIndex = 0;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(KnobModulationWheel)
+        float value = 0.0f;                  // [-1..1]
+        float startDragValue = 0.0f;
+
+        juce::Point<int> dragStartPos{};
+
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(KnobModulationWheel)
 };

@@ -1,17 +1,21 @@
 #include "WireComponent.h"
 #include "Globals.h"
 #include "Popup_Settings.h"
-
+#include <juce_graphics/juce_graphics.h>
 
 WireComponent::WireComponent() {
 
     setInterceptsMouseClicks(false, false);
+    endIsKnob = false;
 }
 
-void WireComponent::SetStartEnd(juce::Point<float> start, juce::Point<float> end)
+void WireComponent::SetStartEnd(juce::Point<float> start, juce::Point<float> end, bool _endIsKnob)
 {
+    this->endIsKnob = _endIsKnob;
     startPos = start;
+
     endPos = end;
+
 
     // Compute sag based on distance
     float distance = start.getDistanceFrom(end);
@@ -32,20 +36,20 @@ void WireComponent::SetStartEnd(juce::Point<float> start, juce::Point<float> end
     auto boundsFloat = tempPath.getBounds().expanded(10.0f);
     auto newBounds = boundsFloat.getSmallestIntegerContainer();
 
-    // Avoid calling setBounds during paint
-    //juce::MessageManager::callAsync([this, newBounds]()
-    //{
-        setBounds(newBounds);
-        // Adjust internal points relative to new bounds
-        startPos -= newBounds.getPosition().toFloat();
-        endPos -= newBounds.getPosition().toFloat();
-        repaint();
-    //});
+    setBounds(newBounds);
+    // Adjust internal points relative to new bounds
+    startPos -= newBounds.getPosition().toFloat();
+    endPos -= newBounds.getPosition().toFloat();
+    repaint();
 }
 
 void WireComponent::SetWireColourIndex(int index) {
     this->colourIndex = index;
     repaint();
+}
+
+int WireComponent::GetWireColourIndex() {
+    return colourIndex;
 }
 
 void WireComponent::SetConnectionType(ConnectionType connectionType) {
@@ -87,11 +91,20 @@ void WireComponent::paint(juce::Graphics& g)
     );
     g.fillEllipse(startCircle);
 
+
     juce::Rectangle<float> endCircle(
-        endPos.x - 7,
-        endPos.y - 7,
-        14,
-        14
+        endPos.x - 6,
+        endPos.y - 6,
+        12,
+        12
     );
-    g.fillEllipse(endCircle);
+
+    // dont draw end circle if end is knob
+    if (endIsKnob) {
+        g.fillEllipse(endCircle.reduced(2.0f));
+
+    }
+    else {
+        g.fillEllipse(endCircle);
+    }
 }

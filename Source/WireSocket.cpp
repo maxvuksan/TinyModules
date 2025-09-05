@@ -98,38 +98,60 @@ void WireSocket::mouseDrag(const juce::MouseEvent& e) {
 void WireSocket::mouseUp(const juce::MouseEvent& e) {
 
     auto mousePosInRack = RackView::instance->getLocalPoint(this, e.getPosition().toFloat());
+
     auto* comp = RackView::instance->getComponentAt(mousePosInRack.roundToInt());
      
     WireSocket* hoveredSocket = dynamic_cast<WireSocket*>(comp);
+    Knob*       hoveredKnob = dynamic_cast<Knob*>(comp);
 
-    // hoveredSocket will be nullptr if no socket is being hovered
-    WireManager::instance->FinishDragAt(hoveredSocket);
+    // place wire in socket or knob, if both are null the wire is removed
+    if (hoveredKnob != nullptr) {
+        
+        WireManager::instance->FinishDragAt(hoveredKnob);
+    }
+    else {
+        WireManager::instance->FinishDragAt(hoveredSocket);
+    }
 }
 
 void WireSocket::AddConnectionInProcessing(const WireAttachedToSocket& connection) {
 
-    if (connection.otherSocket == nullptr) {
-        return;
+    if (connection.otherSocket != nullptr) {
+
+        attachedWires.push_back(connection);
+
+        if (isInput) {
+            RackView::processingManager.AddConnection(
+                connection.connectionType,
+                connection.otherSocket->GetModule(),
+                connection.otherSocket->GetDSPIndex(),
+                GetModule(),
+                dspIndex,
+                connection.wire->GetWireColourIndex());
+        }
+        else {
+            RackView::processingManager.AddConnection(
+                connection.connectionType,
+                GetModule(),
+                dspIndex,
+                connection.otherSocket->GetModule(),
+                connection.otherSocket->GetDSPIndex(),
+                connection.wire->GetWireColourIndex());
+        }
     }
+    else if (connection.otherKnob != nullptr) {
+        attachedWires.push_back(connection);
 
-    attachedWires.push_back(connection);
-
-    if (isInput) {
         RackView::processingManager.AddConnection(
             connection.connectionType,
-            connection.otherSocket->GetModule(),
-            connection.otherSocket->GetDSPIndex(),
             GetModule(),
-            dspIndex);
-    }
-    else {
-        RackView::processingManager.AddConnection(
-            connection.connectionType,
-            GetModule(),
+            connection.otherKnob->GetModule(),
             dspIndex,
-            connection.otherSocket->GetModule(),
-            connection.otherSocket->GetDSPIndex());
+            connection.otherKnob->GetLabel(),
+            connection.wire->GetWireColourIndex()
+        );
     }
+
     RecomputeWireGraphics();
 }
 
@@ -142,15 +164,11 @@ void WireSocket::RemoveAllConnectionsInProcessing() {
     attachedWires.clear();
 }
 
-void WireSocket::RemoveConnectionInProcessing(const WireAttachedToSocket& connection) {
-
-    if (connection.otherSocket == nullptr) {
-        return;
-    }
+void WireSocket::RemoveConnectionInProcessing(WireAttachedToSocket connection) {
 
     for (int i = 0; i < attachedWires.size(); i++) {
 
-        if (connection.otherSocket == attachedWires[i].otherSocket) {
+        if (connection.otherSocket == attachedWires[i].otherSocket || connection.otherKnob == attachedWires[i].otherKnob) {
 
             attachedWires.erase(attachedWires.begin() + i);
             break;
@@ -158,22 +176,36 @@ void WireSocket::RemoveConnectionInProcessing(const WireAttachedToSocket& connec
 
     }
 
-    if (isInput) {
+    if (connection.otherSocket != nullptr) {
+
+        if (isInput) {
+            RackView::processingManager.RemoveConnection(
+                connection.connectionType,
+                connection.otherSocket->GetModule(),
+                connection.otherSocket->GetDSPIndex(),
+                GetModule(),
+                dspIndex);
+        }
+        else {
+            RackView::processingManager.RemoveConnection(
+                connection.connectionType,
+                GetModule(),
+                dspIndex,
+                connection.otherSocket->GetModule(),
+                connection.otherSocket->GetDSPIndex());
+        }
+    }
+
+    else if (connection.otherKnob != nullptr) {
+
         RackView::processingManager.RemoveConnection(
             connection.connectionType,
-            connection.otherSocket->GetModule(),
-            connection.otherSocket->GetDSPIndex(),
             GetModule(),
-            dspIndex);
+            connection.otherKnob->GetModule(),
+            connection.otherKnob->GetLabel()
+        );
     }
-    else {
-        RackView::processingManager.RemoveConnection(
-            connection.connectionType,
-            GetModule(),
-            dspIndex,
-            connection.otherSocket->GetModule(),
-            connection.otherSocket->GetDSPIndex());
-    }
+
     RecomputeWireGraphics();
 }
 
@@ -187,9 +219,19 @@ void WireSocket::RecomputeWireGraphics() {
     for (int i = 0; i < attachedWires.size(); i++) {
 
         juce::Point<float> socketCentreInRackSpace = RackView::instance->getLocalPoint(this, getLocalBounds().toFloat().getCentre());
-        juce::Point<float> otherPositionInRackSpace = RackView::instance->getLocalPoint(attachedWires[i].otherSocket, attachedWires[i].otherSocket->getLocalBounds().toFloat().getCentre());
-
-        attachedWires[i].wire->SetStartEnd(socketCentreInRackSpace, otherPositionInRackSpace);
+        juce::Point<float> otherPositionInRackSpace; 
+        
+        bool endIsKnob = false;
+        // connecting to socket
+        if (attachedWires[i].otherSocket != nullptr) {
+            otherPositionInRackSpace = RackView::instance->getLocalPoint(attachedWires[i].otherSocket, attachedWires[i].otherSocket->getLocalBounds().toFloat().getCentre());
+        }
+        // connecting to knob
+        else if(attachedWires[i].otherKnob != nullptr) {
+            otherPositionInRackSpace = RackView::instance->getLocalPoint(attachedWires[i].otherKnob, attachedWires[i].otherKnob->getLocalBounds().toFloat().getCentre());
+            endIsKnob = true;
+        }
+        attachedWires[i].wire->SetStartEnd(socketCentreInRackSpace, otherPositionInRackSpace, endIsKnob);
     }
 }
 

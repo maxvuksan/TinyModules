@@ -15,11 +15,18 @@ struct Connection {
 
 	ConnectionType connectionType;
 
+
 	Module* outModule;
 	int outSocketIndex;
 
 	Module* inModule;
 	int inSocketIndex;
+
+	int wireColourIndex;
+
+	bool connectedToKnob = false;
+	std::string knobName = "";
+	float knobModValue = 0;
 
 
 	// introduce 1 sample delay to allow module graph to contain cycles?,
@@ -31,6 +38,8 @@ struct Connection {
 		return outModule == other.outModule &&
 			outSocketIndex == other.outSocketIndex &&
 			inModule == other.inModule &&
-			inSocketIndex == other.inSocketIndex;
+			inSocketIndex == other.inSocketIndex &&
+			knobName == other.knobName &&
+			connectedToKnob == other.connectedToKnob;
 	}
 };

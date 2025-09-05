@@ -29,6 +29,12 @@ void Knob::Configure(KnobConfiguration* configuration) {
         true
     );
 
+    minVal = configuration->min;
+    maxVal = configuration->max;
+
+    modScalePositive = configuration->max - configuration->defaultValue;
+    modScaleNegative = configuration->defaultValue - configuration->min;
+
     defaultValue = configuration->defaultValue;
     colourType = configuration->colourType;
 }
@@ -48,20 +54,74 @@ void Knob::SetManualValue(double value) {
     setValue(value);
 }
 
-void Knob::AddConnectedWire(WireSocket* otherSocket) {
+double Knob::GetValue(int sampleIndex) {
+
+    double value = getValue();
+
+    if (connectedWires.size() == 0) {
+        return value;
+    }
+
+
+
+    for (int i = 0; i < connectedWires.size(); i++) {
+
+        // TO DO: Currently we are reading connectedWires from the Audio thread, however the UI thread makes changes to this structure. 
+        //          this race condition should be fixed. For a temporary fix a null check is performed.
+        if (connectedWires[i].modulationWheel == nullptr) {
+            continue;
+        }
+
+        float modVal = connectedWires[i].modulationWheel->GetValue();
+        float sample = connectedWires[i].otherSocket->GetModule()->GetOutputReadPtr(connectedWires[i].otherSocket->GetDSPIndex(), 0)[sampleIndex];
+
+        if (modVal > 0) {
+            value += sample * modVal * modScalePositive;
+        }
+        else {
+            value += sample * modVal * modScaleNegative;
+        }
+
+    }
+
+    value = std::clamp(value, minVal, maxVal);
+
+    return value;
+}
+
+void Knob::RecomputeWireGraphics() {
+
+    for (int i = 0; i < connectedWires.size(); i++) {
+
+        if (connectedWires[i].otherSocket == nullptr) {
+            continue;
+        }
+        connectedWires[i].otherSocket->RecomputeWireGraphics();
+    }
+}
+
+
+
+void Knob::AddConnectedWire(WireSocket* otherSocket, int wireColourIndex, float modulationValue) {
 
     // is connection already present...?
+
+    if (otherSocket == nullptr) {
+        return;
+    }
 
     for (int i = 0; i < connectedWires.size(); i++) {
 
         if (connectedWires[i].otherSocket == otherSocket) {
-            //return;
+            return;
         }
     }
 
     ConnectedWire& w = connectedWires.emplace_back();
     w.otherSocket = otherSocket;
     w.modulationWheel = WireManager::instance->CreateModulationWheel();
+    w.modulationWheel->SetWireColourIndex(wireColourIndex);
+    w.modulationWheel->SetValue(modulationValue);
 
     PositionModulationWheels();
 }
@@ -73,6 +133,7 @@ void Knob::RemoveConnectedWire(WireSocket* otherSocket) {
 
         if (connectedWires[i].otherSocket == otherSocket) {
             
+            WireManager::instance->RemoveModulationWheel(connectedWires[i].modulationWheel);
             connectedWires.erase(connectedWires.begin() + i);
             return;
         }
@@ -91,6 +152,18 @@ void Knob::RemoveAllConnectedWires() {
     connectedWires.clear();
 
     PositionModulationWheels();
+}
+
+KnobModulationWheel* Knob::GetModulationWheel(WireSocket* otherOutSocket) {
+
+    for (int i = 0; i < connectedWires.size(); i++) {
+        
+        if (connectedWires[i].otherSocket == otherOutSocket) {
+            return connectedWires[i].modulationWheel;
+        }
+    }
+
+    return nullptr;
 }
 
 void Knob::PositionModulationWheels() {
@@ -223,6 +296,10 @@ void Knob::paint(juce::Graphics& g)
     g.strokePath(pointer, juce::PathStrokeType(pointerThickness));
 }
 
+
+void Knob::SetLabel(const std::string& _label) {
+    this->label = _label;
+}
 
 void Knob::mouseDown(const juce::MouseEvent& e)
 {

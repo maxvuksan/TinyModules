@@ -66,7 +66,6 @@ void WireManager::MoveWireFrom(WireSocket* fromSocket) {
     RackView::instance->ReactToCanConnectToKnobs(interactState.canConnectToKnobs);
 
     interactState.mode = WireInteractionState::Moving;
-
     interactState.sourceSocket = fromSocket;
     interactState.movedWires = fromSocket->GetAttachedWires(); // when moving, we reference the movedWires structure instead of current wire since we (could) have multiple wires
 
@@ -90,8 +89,18 @@ void WireManager::UpdateDragPosition(juce::Point<float> end) {
         // update each wire being moved...  
         for (int i = 0; i < interactState.movedWires.size(); i++) {
 
-            juce::Point<float> socketCentre = RackView::instance->getLocalPoint(interactState.movedWires[i].otherSocket, interactState.sourceSocket->getLocalBounds().toFloat().getCentre());
-            interactState.movedWires[i].wire->SetStartEnd(socketCentre, end);
+            juce::Point<float> socketCentre;
+            bool endIsKnob = false;
+
+            if (interactState.movedWires[i].otherSocket != nullptr) {
+                socketCentre = RackView::instance->getLocalPoint(interactState.movedWires[i].otherSocket, interactState.sourceSocket->getLocalBounds().toFloat().getCentre());
+            }
+            else if (interactState.movedWires[i].otherKnob != nullptr) {
+                socketCentre = RackView::instance->getLocalPoint(interactState.movedWires[i].otherKnob, interactState.sourceSocket->getLocalBounds().toFloat().getCentre());
+                endIsKnob = true;
+            }
+
+            interactState.movedWires[i].wire->SetStartEnd(end, socketCentre, endIsKnob);
         }
     }
 }
@@ -110,18 +119,77 @@ void WireManager::FinishDragAt(Knob* targetKnob) {
         interactState.mode = WireInteractionState::None;
 
         // connection to knobs is only allowed for outgoing signals
-        if (interactState.sourceSocket->GetIsInput()) {
+        if (interactState.sourceSocket->GetIsInput() || targetKnob == nullptr || interactState.sourceSocket == nullptr) {
 
-            //RemoveWire(interactState.currentWire);
+            RemoveWire(interactState.currentWire);
             return;
         }
 
+        WireAttachedToSocket connection;
+        connection.otherSocket = nullptr;
+        connection.wire = interactState.currentWire;
+        connection.connectionType = interactState.sourceSocket->GetConnectionType();
+        connection.otherKnob = targetKnob;
+
+        connection.otherKnob->AddConnectedWire(interactState.sourceSocket, interactState.currentWire->GetWireColourIndex());
+        interactState.sourceSocket->AddConnectionInProcessing(connection);
+    }
+    if (interactState.mode == WireInteractionState::Moving) {
+
+        interactState.mode = WireInteractionState::None;
+
+        // remove wires which cannot be attached to a knob
+        for (int i = 0; i < interactState.movedWires.size(); i++) {
+
+            // we connection must meet these conditions
+            if (interactState.movedWires[i].otherKnob == nullptr && 
+            (interactState.movedWires[i].otherSocket != nullptr && 
+            interactState.movedWires[i].otherSocket->GetIsInput())) {
+                
+
+                WireAttachedToSocket connection;
+                connection.otherSocket = nullptr;
+                connection.wire = interactState.currentWire;
+                connection.connectionType = interactState.sourceSocket->GetConnectionType();
+                connection.otherKnob = targetKnob;
+
+                connection.otherKnob->AddConnectedWire(interactState.movedWires[i].otherSocket, interactState.currentWire->GetWireColourIndex());
+                interactState.movedWires[i].otherSocket->AddConnectionInProcessing(connection);
+
+            }
+            else { // we remove the wire
+
+                WireAttachedToSocket connection;
+                connection.otherSocket = interactState.movedWires[i].otherSocket;
+
+                interactState.sourceSocket->RemoveConnectionInProcessing(connection);
+
+                connection.otherSocket = interactState.sourceSocket;
+
+                if (interactState.movedWires[i].otherSocket != nullptr) {
+                    interactState.movedWires[i].otherSocket->RemoveConnectionInProcessing(connection);
+                }
+                else if (interactState.movedWires[i].otherKnob != nullptr) {
+                    interactState.movedWires[i].otherKnob->RemoveConnectedWire(interactState.sourceSocket);
+                }
+
+                RemoveWire(interactState.movedWires[i].wire);
+            }
+        }
 
     }
 
 }
 
 void WireManager::FinishDragAt(WireSocket* targetSocket) {
+
+    /*
+        TO DO:      When any connection is made or moved (to either a knob or socket) 
+                    we should ensure that the connection does not already exist (we do not want stacked wires / duplicate connections)
+                    if we find a duplicate, this should be removed
+    */
+
+
 
     interactState.canConnectToKnobs = false;
     RackView::instance->ReactToCanConnectToKnobs(interactState.canConnectToKnobs);
@@ -147,9 +215,6 @@ void WireManager::FinishDragAt(WireSocket* targetSocket) {
         connection.wire = interactState.currentWire;
         connection.connectionType = interactState.sourceSocket->GetConnectionType();
         
-        juce::Point<float> startSocketCentre = RackView::instance->getLocalPoint(interactState.sourceSocket, interactState.sourceSocket->getLocalBounds().toFloat().getCentre());
-        juce::Point<float> endSocketCentre = RackView::instance->getLocalPoint(targetSocket, targetSocket->getLocalBounds().toFloat().getCentre());
-        interactState.currentWire->SetStartEnd(startSocketCentre, endSocketCentre);
 
         interactState.sourceSocket->AddConnectionInProcessing(connection);
 
@@ -174,7 +239,13 @@ void WireManager::FinishDragAt(WireSocket* targetSocket) {
 
                 connection.otherSocket = interactState.sourceSocket;
 
-                interactState.movedWires[i].otherSocket->RemoveConnectionInProcessing(connection);
+                if (interactState.movedWires[i].otherSocket != nullptr) {
+                    interactState.movedWires[i].otherSocket->RemoveConnectionInProcessing(connection);
+                }
+                else if (interactState.movedWires[i].otherKnob != nullptr) {
+                    interactState.movedWires[i].otherKnob->RemoveConnectedWire(interactState.sourceSocket);
+                }
+
 
                 RemoveWire(interactState.movedWires[i].wire);
             }
@@ -188,23 +259,36 @@ void WireManager::FinishDragAt(WireSocket* targetSocket) {
             WireAttachedToSocket connection;
             connection.otherSocket = interactState.sourceSocket;
 
-            interactState.movedWires[i].otherSocket->RemoveConnectionInProcessing(connection);
+            if (interactState.movedWires[i].otherSocket != nullptr) {
+                interactState.movedWires[i].otherSocket->RemoveConnectionInProcessing(connection);
+            }
+            else if(interactState.movedWires[i].otherKnob != nullptr){
+                interactState.movedWires[i].otherKnob->RemoveConnectedWire(interactState.sourceSocket);
+            }
 
-            connection.otherSocket = targetSocket;
-            connection.wire = interactState.movedWires[i].wire;
-            connection.connectionType = interactState.movedWires[i].otherSocket->GetConnectionType();
 
-            juce::Point<float> startSocketCentre = RackView::instance->getLocalPoint(interactState.movedWires[i].otherSocket, interactState.movedWires[i].otherSocket->getLocalBounds().toFloat().getCentre());
-            juce::Point<float> endSocketCentre = RackView::instance->getLocalPoint(targetSocket, targetSocket->getLocalBounds().toFloat().getCentre());
+            if (interactState.movedWires[i].otherSocket != nullptr) {
+                connection.otherSocket = targetSocket;
+                connection.wire = interactState.movedWires[i].wire;
+                connection.connectionType = interactState.movedWires[i].otherSocket->GetConnectionType();
 
-            interactState.movedWires[i].wire->SetStartEnd(startSocketCentre, endSocketCentre);
+                interactState.movedWires[i].otherSocket->AddConnectionInProcessing(connection);
 
-            interactState.movedWires[i].otherSocket->AddConnectionInProcessing(connection);
+                // flip for targetSocket
+                connection.otherSocket = interactState.movedWires[i].otherSocket;
+                targetSocket->AssignWireFromOtherSocket(connection);
+            }
+            else if (interactState.movedWires[i].otherKnob != nullptr) {
 
-            // flip for targetSocket
-            connection.otherSocket = interactState.movedWires[i].otherSocket;
+                connection.otherKnob = interactState.movedWires[i].otherKnob;
+                connection.otherSocket = nullptr;
+                connection.wire = interactState.movedWires[i].wire;
+                connection.connectionType = targetSocket->GetConnectionType();
 
-            targetSocket->AssignWireFromOtherSocket(connection);
+                targetSocket->AddConnectionInProcessing(connection);
+                interactState.movedWires[i].otherKnob->AddConnectedWire(targetSocket, interactState.movedWires[i].wire->GetWireColourIndex());
+            }
+
         }
 
 
@@ -231,20 +315,40 @@ void WireManager::LoadConnectionFromSavedData(const Connection& connection) {
 
     // ensure poly considers are restored
     ConnectionType connectionType = CONNECT_MONO;
-    if (inSock->GetConnectionType() == CONNECT_POLY || outSock->GetConnectionType() == CONNECT_POLY) {
+    if (outSock->GetConnectionType() == CONNECT_POLY || (inSock != nullptr && inSock->GetConnectionType() == CONNECT_POLY)) {
         connectionType = CONNECT_POLY;
     }
+
+    // we can make the assumption out socket will always be valid.
 
     WireAttachedToSocket visualConnect;
     visualConnect.connectionType = connectionType;
     visualConnect.wire = CreateWire();
+    visualConnect.wire->SetWireColourIndex(connection.wireColourIndex);
     visualConnect.wire->SetConnectionType(connectionType);
-    visualConnect.otherSocket = outSock;
-
-    inSock->AddConnectionInProcessing(visualConnect);
-
     visualConnect.otherSocket = inSock;
-    outSock->AssignWireFromOtherSocket(visualConnect);
+
+    // connect to knob if possible
+    Knob* knob = connection.inModule->Component_GetKnob(connection.knobName);
+
+    if (knob != nullptr) {
+        visualConnect.otherKnob = knob;
+
+        knob->AddConnectedWire(outSock, connection.wireColourIndex, connection.knobModValue);
+        visualConnect.otherKnob = knob;
+        visualConnect.otherSocket = nullptr;
+    }
+
+
+    outSock->AddConnectionInProcessing(visualConnect);
+
+    if (inSock != nullptr) {
+    
+        visualConnect.otherSocket = outSock;
+        inSock->AssignWireFromOtherSocket(visualConnect);
+    }
+
+
 }
 
 
@@ -268,7 +372,8 @@ WireComponent* WireManager::CreateWire()
     WireComponent* rawPtr = wire.get(); // Save raw pointer before transferring ownership
 
     wires.push_back(std::move(wire));
-    addAndMakeVisible(rawPtr);
+    // add behind other children (modulation wheels)
+    addAndMakeVisible(rawPtr, 0);
 
     currentWireColourIndex++;
     currentWireColourIndex %= CustomLookAndFeel::GetTheme()->colour_wires.size();
@@ -282,15 +387,15 @@ void WireManager::RemoveWire(WireComponent* wire) {
 
         if (wires[i].get() == wire) {
 
-            // 1. Deactivate wire visually/logically
+            // deactivate wire visually/logically
             removeChildComponent(wire);
             wire->SetStartEnd({ 0,0 }, { 0,0 });
             wire->setVisible(false);
 
-            // 2. Move to vacant pool
+            // move to vacant pool
             vacantWires.push_back(std::move(wires[i]));
 
-            // 3. Remove from active list
+            // remove from active list
             wires.erase(wires.begin() + i);
             return;
         }
@@ -311,11 +416,14 @@ KnobModulationWheel* WireManager::CreateModulationWheel() {
         wheel = std::make_unique<KnobModulationWheel>();
     }
 
+
     KnobModulationWheel* rawPtr = wheel.get(); // Save raw pointer before transferring ownership
+    rawPtr->SetValue(0);
 
     modulationWheels.push_back(std::move(wheel));
 
-    addAndMakeVisible(rawPtr);
+    // add infront of other children (wires)
+    addAndMakeVisible(rawPtr, -1);
 
     return rawPtr;
 }

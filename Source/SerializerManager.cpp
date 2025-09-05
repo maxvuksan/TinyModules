@@ -7,11 +7,12 @@ juce::var SerializerManager::SerializePatch(const RackView& rack) {
 
     // save modules ------------------------------------------------------------------
 
+    const std::vector<Module*>& allModules = RackView::processingManager.GetAllModules();
     juce::Array<juce::var> modulesArray;
     std::unordered_map<Module*, int> moduleToIndex;     // map the module addresses to indicies (so connections know what modules are routed to what)
     
     int i = 0;
-    for (auto* module : RackView::processingManager.GetAllModules()) { // modules are serialized in the order they are in 
+    for (auto* module : allModules) { // modules are serialized in the order they are in 
 
         modulesArray.add(module->Serialize());
         moduleToIndex[module] = i;
@@ -35,6 +36,20 @@ juce::var SerializerManager::SerializePatch(const RackView& rack) {
         obj->setProperty("outSocketIndex", connection.outSocketIndex);
         obj->setProperty("inModuleIndex", moduleToIndex[connection.inModule]);
         obj->setProperty("inSocketIndex", connection.inSocketIndex);
+        obj->setProperty("colI", connection.wireColourIndex);
+
+        if (connection.connectedToKnob) {
+            obj->setProperty("knobName", juce::String(connection.knobName));
+
+            WireSocket* outSocket = allModules[moduleToIndex[connection.outModule]]->GetSocketFromDspIndex(connection.outSocketIndex, false);
+
+            // this indirect operation is not ideal, but given the save method is rarley called, the performance is not crucial.
+            obj->setProperty("knobMod", 
+                allModules[moduleToIndex[connection.inModule]]->
+                Component_GetKnob(connection.knobName)->
+                GetModulationWheel(outSocket)->
+                GetValue());
+        }
 
         connectionsArray.add(obj.get());
     }
@@ -128,14 +143,32 @@ void SerializerManager::DeserializePatch(const juce::var& patchData, RackView& r
         int outModuleIndex = static_cast<int>(connectionObj->getProperty("outModuleIndex"));
         int outSocketIndex = static_cast<int>(connectionObj->getProperty("outSocketIndex"));
         int inModuleIndex = static_cast<int>(connectionObj->getProperty("inModuleIndex"));
-        int inSocketIndex = static_cast<int>(connectionObj->getProperty("inSocketIndex"));
-    
+        int wireColourIndex = static_cast<int>(connectionObj->getProperty("colI"));
+
+        int inSocketIndex = -1;
+        std::string knobName = "";
+        float knobModValue = 0;
+
+        // since these parameters are not always present, do an additional check
+
+        if (connectionObj->hasProperty("inSocketIndex")) {
+            inSocketIndex = static_cast<int>(connectionObj->getProperty("inSocketIndex"));
+        }
+        // if there is a knob, there must be a knobMod property
+        if (connectionObj->hasProperty("knobName")) {
+
+            knobName = connectionObj->getProperty("knobName").toString().toStdString();
+            knobModValue = static_cast<float>(connectionObj->getProperty("knobMod"));
+        }
+
         Connection connection;
         connection.inModule = indexToModule[inModuleIndex];
         connection.outModule = indexToModule[outModuleIndex];
         connection.inSocketIndex = inSocketIndex;
         connection.outSocketIndex = outSocketIndex;
-
+        connection.knobName = knobName;
+        connection.wireColourIndex = wireColourIndex;
+         
         WireManager::instance->LoadConnectionFromSavedData(connection);
     }
 

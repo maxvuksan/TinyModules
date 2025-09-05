@@ -27,7 +27,7 @@ class WireSocket : public juce::Component
         void mouseUp(const juce::MouseEvent& e) override;
 
         void AddConnectionInProcessing(const WireAttachedToSocket& connection);
-        void RemoveConnectionInProcessing(const WireAttachedToSocket& connection);
+        void RemoveConnectionInProcessing(WireAttachedToSocket connection);
         void RemoveAllConnectionsInProcessing();
 
         void AssignWireFromOtherSocket(WireAttachedToSocket connection);

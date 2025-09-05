@@ -37,9 +37,11 @@ const std::vector<Connection>& ProcessingManager::GetAllConnections() {
 }
 
 
-void ProcessingManager::AddConnection(ConnectionType connectionType, Module* outModule, int outSocketIndex, Module* inModule, int inSocketIndex) {
+void ProcessingManager::AddConnection(ConnectionType connectionType, Module* outModule, int outSocketIndex, Module* inModule, int inSocketIndex, int wireColourIndex) {
 
     Connection toAdd{ connectionType, outModule, outSocketIndex, inModule, inSocketIndex };
+    toAdd.wireColourIndex = wireColourIndex;
+    toAdd.connectedToKnob = false;
 
     for (int i = 0; i < connections.size(); i++) {
         
@@ -51,18 +53,6 @@ void ProcessingManager::AddConnection(ConnectionType connectionType, Module* out
 
     connections.push_back(toAdd);
 
-    /*
-    Connection& newConnection = connections.back();
-
-    if (connectionType == CONNECT_MONO) {
-        newConnection.delayBuffer.setSize(2, 1);  // 1 channels, 1 sample
-    }
-    else { // polyphonic
-        newConnection.delayBuffer.setSize(16, 1);  // 16 channels, 1 sample
-    }
-
-    newConnection.delayBuffer.clear();
-    */
     SortModules();
 }
 
@@ -75,6 +65,38 @@ void ProcessingManager::RemoveConnection(ConnectionType connectionType, Module* 
 	SortModules();
 }
 
+void ProcessingManager::AddConnection(ConnectionType connectionType, Module* outModule, Module* inModule, int outSocketIndex, const std::string& knobName, int wireColourIndex) {
+
+    Connection toAdd{ connectionType, outModule, outSocketIndex, inModule, -1 };
+    toAdd.connectedToKnob = true;
+    toAdd.knobName = knobName;
+    toAdd.wireColourIndex = wireColourIndex;
+
+
+
+    for (int i = 0; i < connections.size(); i++) {
+
+        // connection already exists 
+        if (connections[i] == toAdd) {
+            return;
+        }
+    }
+
+    connections.push_back(toAdd);
+
+    SortModules();
+}
+
+void ProcessingManager::RemoveConnection(ConnectionType connectionType, Module* outModule, Module* inModule, const std::string& knobName) {
+
+    Connection toRemove{ connectionType, outModule, -1, inModule, -1 };
+    toRemove.knobName = knobName;
+
+    connections.erase(std::remove(connections.begin(), connections.end(), toRemove), connections.end());
+
+    SortModules();
+}
+
 void ProcessingManager::SortModules() {
 
     sortedModules.clear();
@@ -85,7 +107,7 @@ void ProcessingManager::SortModules() {
         modulesInGraph.insert(connection.inModule);
     }
 
-    // Step 2: Build in-degree map and adjacency list
+    // Build in-degree map and adjacency list
     std::unordered_map<Module*, int> inDegree;
     std::unordered_map<Module*, std::vector<Module*>> adjacency;
 
@@ -99,7 +121,7 @@ void ProcessingManager::SortModules() {
         inDegree[connection.inModule]++;
     }
 
-    // Step 3: Find modules with no incoming edges (no dependencies)
+    // Find modules with no incoming edges (no dependencies)
     std::queue<Module*> ready;
     for (auto* module : modulesInGraph) {
         if (inDegree[module] == 0) {
@@ -107,7 +129,7 @@ void ProcessingManager::SortModules() {
         }
     }
 
-    // Step 4: Perform topological sort
+    // Perform topological sort
     while (!ready.empty()) {
         Module* current = ready.front();
         ready.pop();
@@ -121,7 +143,7 @@ void ProcessingManager::SortModules() {
         }
     }
 
-    // Step 5: Check for cycles (feedback loops)
+    //  Check for cycles (feedback loops)
     if (sortedModules.size() != modulesInGraph.size()) {
         jassertfalse; // Detected a cycle; cannot determine safe processing order
         sortedModules.clear();
@@ -220,10 +242,12 @@ void ProcessingManager::ProcessModule(Module* _module) {
         socket->SetNumActiveVoices(maxNumActiveVoices);
 
         /*
+        *   TO DO: This section performs the same operation on every voice, we could potentially utalize SIMD to optimize.
+        *           this should be profiled first.
+        * 
             iterate over all active channels, mono should be assigned one active channel so only iterate once
         */
         for (int con = 0; con < maxNumActiveVoices; con++) {
-
 
 
             float* writePtr = inBuffer.getWritePointer(con);

@@ -55,15 +55,17 @@ class ProcessingManager {
 		/*
 			registers a connection 
 
-			@param outModule		-	the module which contains an out socket
-			@param outSocketIndex	-	the index of the output socket
-			@param inModule			-	the module containing the in socket
-			@param inSocketIndex	-	the index of the input socket
+			@param	outModule		-	the module which contains an out socket
+			@param	outSocketIndex	-	the index of the output socket
+			@param	inModule		-	the module containing the in socket
+			@param	inSocketIndex	-	the index of the input socket
+			@param	wireColourIndex	-	the colour of the connection as an index (colour is then determined by active theme)
 		*/
-		void AddConnection(ConnectionType connectionType, Module* outModule, int outSocketIndex, Module* inModule, int inSocketIndex);
-
-		/* removes a registered connection */
+		void AddConnection(ConnectionType connectionType, Module* outModule, int outSocketIndex, Module* inModule, int inSocketIndex, int wireColourIndex = 0);
 		void RemoveConnection(ConnectionType connectionType, Module* outModule, int outSocketIndex, Module* inModule, int inSocketIndex);
+		// for connections that are Socket -> knob
+		void AddConnection(ConnectionType connectionType, Module* outModule, Module* inModule, int outSocketIndex, const std::string& knobName, int wireColourIndex);
+		void RemoveConnection(ConnectionType connectionType, Module* outModule, Module* inModule, const std::string& knobName);
 
 		/* sorts modules in the order they should be processed (computing by  each modules connections) */
 		void SortModules();
