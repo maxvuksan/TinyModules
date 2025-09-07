@@ -105,3 +105,24 @@ void Module_Oscillator::Process() {
 }
 
 
+juce::var Module_Oscillator::SerializeCustom() {
+
+    juce::DynamicObject* rootObj = new juce::DynamicObject();
+
+    rootObj->setProperty("osc_waveform1", oscillators[0].waveformVisual.GetWaveType());
+    rootObj->setProperty("osc_waveform2", oscillators[1].waveformVisual.GetWaveType());
+
+    return rootObj;
+}
+
+void Module_Oscillator::DeserializeCustom(const juce::var& data) {
+
+    if (auto* obj = data.getDynamicObject()) {
+
+        DSP::WaveType wave1 = (DSP::WaveType)static_cast<int>(obj->getProperty("osc_waveform1"));
+        DSP::WaveType wave2 = (DSP::WaveType)static_cast<int>(obj->getProperty("osc_waveform2"));
+
+        oscillators[0].waveformVisual.SetWaveType(wave1);
+        oscillators[1].waveformVisual.SetWaveType(wave2);
+    }
+}

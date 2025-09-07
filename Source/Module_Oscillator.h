@@ -3,6 +3,7 @@
 #include "WaveformVisual.h"
 
 struct OscillatorStructure {
+
 	float phase[16];
 	WaveformVisual waveformVisual;
 
@@ -17,6 +18,9 @@ class Module_Oscillator : public Module {
 		void Reset() override;
 		void Prepare(double sampleRate, int blockSize) override;
 		void Process();
+
+		juce::var SerializeCustom() override;
+		void DeserializeCustom(const juce::var& customData) override; 
 
 	private:
 

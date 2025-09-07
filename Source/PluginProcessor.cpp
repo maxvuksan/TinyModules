@@ -103,6 +103,11 @@ void Juce_SketchRackAudioProcessor::prepareToPlay (double sampleRate, int sample
 
     audioConfig.sampleRate = sampleRate;
     audioConfig.blockSize = samplesPerBlock;
+
+    if (processingManager == nullptr || rackView == nullptr || !processingManager->IsProcessingEnabled()) {
+        return;
+    }
+
 }
 
 void Juce_SketchRackAudioProcessor::releaseResources()
@@ -155,14 +160,9 @@ void Juce_SketchRackAudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
         buffer.clear(i, 0, buffer.getNumSamples());
     }
 
-    if (processingManager == nullptr || rackView == nullptr) {
+    if (processingManager == nullptr || rackView == nullptr || !processingManager->IsProcessingEnabled()) {
         return;
     }
-
-    if (!processingManager->IsProcessingEnabled()) {
-        return;
-    }
-
 
     processingManager->PrepareAll(audioConfig.sampleRate, audioConfig.blockSize);
     processingManager->ProcessAll();
@@ -173,7 +173,13 @@ void Juce_SketchRackAudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     }
 
     // Get the output buffer from the final output module
+
     auto& outputBuffer = rackView->outputBlock->GetOutputBuffer(0);
+
+    if (&outputBuffer == nullptr) {
+        buffer.clear();
+        return;
+    }
 
     // Ensure safety
     jassert(outputBuffer.getNumChannels() >= 1);

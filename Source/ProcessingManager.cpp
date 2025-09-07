@@ -219,10 +219,6 @@ void ProcessingManager::ProcessModule(Module* _module) {
             continue;
         }
 
-        int dspIndex = socket->GetDSPIndex();
-        auto& inBuffer = _module->GetInputBuffer(dspIndex);
-        
-
         const std::vector<WireAttachedToSocket>& attachedWires = socket->GetAttachedWires();
         int maxNumActiveVoices = 1;
 
@@ -241,6 +237,8 @@ void ProcessingManager::ProcessModule(Module* _module) {
 
         socket->SetNumActiveVoices(maxNumActiveVoices);
 
+        auto& inBuffer = _module->GetInputBuffer(socket->GetDSPIndex());
+
         /*
         *   TO DO: This section performs the same operation on every voice, we could potentially utalize SIMD to optimize.
         *           this should be profiled first.
@@ -248,10 +246,6 @@ void ProcessingManager::ProcessModule(Module* _module) {
             iterate over all active channels, mono should be assigned one active channel so only iterate once
         */
         for (int con = 0; con < maxNumActiveVoices; con++) {
-
-
-            float* writePtr = inBuffer.getWritePointer(con);
-
 
             // iterate and sum incoming wires, store summed buffer in the input buffer of the module 
 
@@ -265,8 +259,6 @@ void ProcessingManager::ProcessModule(Module* _module) {
 
                 int otherDspIndex = otherSocket->GetDSPIndex();
                 auto& otherBuffer = otherSocket->GetModule()->GetOutputBuffer(otherDspIndex);
-
-                const float* readPtr = otherBuffer.getReadPointer(con);
 
                 inBuffer.addFrom(con, 0, otherBuffer, con, 0, inBuffer.getNumSamples());
             }

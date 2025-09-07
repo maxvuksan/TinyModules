@@ -2,7 +2,7 @@
 #include "DSP_Oscillator.h"
 #include "Globals.h"
 
-Module_LFO::Module_LFO() : Module::Module(2, "lfo") {
+Module_LFO::Module_LFO() : Module::Module(1, "lfo") {
 
     KnobConfiguration freqConfig;
     freqConfig.defaultValue = 261.63;
@@ -20,14 +20,10 @@ Module_LFO::Module_LFO() : Module::Module(2, "lfo") {
     freqConfig.min = -1;
     freqConfig.max = 1;
 
-    Component_CreateKnob("fm", 0, 3, &fmConfig);
-
-    Component_CreateInputSocket("fm", 0, 4);
-
-    Component_CreateOutputSocket("sin", 1, 1);
-    Component_CreateOutputSocket("squ", 1, 2);
-    Component_CreateOutputSocket("saw", 1, 3);
-    Component_CreateOutputSocket("tri", 1, 4);
+    Component_CreateOutputSocket("sin", 0, 1);
+    Component_CreateOutputSocket("squ", 0, 2);
+    Component_CreateOutputSocket("saw", 0, 3);
+    Component_CreateOutputSocket("tri", 0, 4);
 }
 
 void Module_LFO::Reset() {
@@ -50,8 +46,6 @@ void Module_LFO::Process() {
 
     for (int i = 0; i < numSamples; ++i)
     {
-        float fm = GetInputReadPtr(0)[i];
-
         // Generate samples
         float sineSample = DSP::SampleWaveform(DSP::WaveType::Sine, phase);
         float squareSample = DSP::SampleWaveform(DSP::WaveType::Square, phase);

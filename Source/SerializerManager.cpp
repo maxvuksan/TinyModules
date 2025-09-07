@@ -3,6 +3,8 @@
 
 juce::var SerializerManager::SerializePatch(const RackView& rack) {
 
+    rack.processingManager.SetProcessingEnabled(false);
+
 	juce::DynamicObject::Ptr root = new juce::DynamicObject();
 
     // save modules ------------------------------------------------------------------
@@ -56,6 +58,7 @@ juce::var SerializerManager::SerializePatch(const RackView& rack) {
 
     root->setProperty("connections", connectionsArray);
 
+    rack.processingManager.SetProcessingEnabled(true);
 
     return root.get();
 }
@@ -70,6 +73,9 @@ void SerializerManager::DeserializePatch(const juce::var& patchData, RackView& r
     if (!obj) {
         return;
     }
+
+
+    rack.processingManager.SetProcessingEnabled(false);
 
 
     // load modules ----------------------------------------------------------------
@@ -167,11 +173,14 @@ void SerializerManager::DeserializePatch(const juce::var& patchData, RackView& r
         connection.inSocketIndex = inSocketIndex;
         connection.outSocketIndex = outSocketIndex;
         connection.knobName = knobName;
+        connection.knobModValue = knobModValue;
         connection.wireColourIndex = wireColourIndex;
          
         WireManager::instance->LoadConnectionFromSavedData(connection);
     }
 
+
+    rack.processingManager.SetProcessingEnabled(true);
 }
 
 void SerializerManager::SaveToFile(const RackView& state, const juce::File& file) {
