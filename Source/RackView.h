@@ -6,7 +6,7 @@
 #include "WireManager.h"
 #include "CustomLookAndFeel.h"
 #include "ProcessingManager.h"
-
+#include "AudioConfig.h"
 #include "FloatingBlockComponent.h"
 #include "SelectionComponent.h"
 
@@ -97,10 +97,14 @@ class RackView : public juce::Component
         */
         void DeleteModule(int x, int y);
 
+        void SetAudioConfig(const AudioConfig& config);
+        const AudioConfig& GetAudioConfig();
+
         /* 
             grid index(for 1D layout)
         */
         int GI(int x, int y) { return x + y * GLOBAL_RACK_WIDTH; }
+
 
         static RackView* instance;
         static ProcessingManager processingManager;
@@ -111,6 +115,7 @@ class RackView : public juce::Component
 
     private:
 
+        AudioConfig audioConfig;
         RackLODFactor lodFactor;
         CustomLookAndFeel customLookAndFeel;
 

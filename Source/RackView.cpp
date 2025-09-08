@@ -226,6 +226,14 @@ void RackView::DeleteModule(int x, int y) {
     repaint();
 }
 
+void RackView::SetAudioConfig(const AudioConfig& config) {
+    this->audioConfig = config;
+}
+
+const AudioConfig& RackView::GetAudioConfig() {
+    return this->audioConfig;
+}
+
 
 
 

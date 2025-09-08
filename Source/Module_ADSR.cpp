@@ -10,7 +10,6 @@ Module_ADSR::Module_ADSR() : Module::Module(3, "adsr envelope") {
     knobConfig.max = 8.0;
     knobConfig.skewAroundDefault = true;
 
-
     addAndMakeVisible(visual);
     SetComponentBounds(visual, 0, 1, 3, 2);
 
@@ -37,7 +36,7 @@ void Module_ADSR::Prepare(double sampleRate, int blockSize) {
     adsrParams.release = Component_GetKnobValue("release");
 
     juce::MessageManager::callAsync([this] {
-        visual.SetControls(adsrParams.attack, adsrParams.sustain, adsrParams.decay, adsrParams.release);
+        visual.SetEnvelopeControls(adsrParams.attack, adsrParams.sustain, adsrParams.decay, adsrParams.release);
     });
 
     adsr.setParameters(adsrParams);

@@ -9,15 +9,10 @@
 #pragma once
 #include "CustomLookAndFeel.h"
 #include <JuceHeader.h>
+#include "AudioConfig.h"
 
 class RackView;
 class ProcessingManager;
-
-struct AudioConfig {
-
-    double sampleRate = 0;
-    int blockSize = 0;
-};
 
 
 //==============================================================================
@@ -74,7 +69,6 @@ private:
     ProcessingManager* processingManager;
 
     AudioConfig audioConfig;
-
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Juce_SketchRackAudioProcessor)

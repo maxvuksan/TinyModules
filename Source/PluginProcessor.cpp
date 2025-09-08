@@ -104,9 +104,10 @@ void Juce_SketchRackAudioProcessor::prepareToPlay (double sampleRate, int sample
     audioConfig.sampleRate = sampleRate;
     audioConfig.blockSize = samplesPerBlock;
 
-    if (processingManager == nullptr || rackView == nullptr || !processingManager->IsProcessingEnabled()) {
-        return;
-    }
+
+//    if (processingManager == nullptr || rackView == nullptr || !processingManager->IsProcessingEnabled()) {
+  //      return;
+    //}
 
 }
 
@@ -163,6 +164,8 @@ void Juce_SketchRackAudioProcessor::processBlock(juce::AudioBuffer<float>& buffe
     if (processingManager == nullptr || rackView == nullptr || !processingManager->IsProcessingEnabled()) {
         return;
     }
+
+    rackView->SetAudioConfig(audioConfig);
 
     processingManager->PrepareAll(audioConfig.sampleRate, audioConfig.blockSize);
     processingManager->ProcessAll();

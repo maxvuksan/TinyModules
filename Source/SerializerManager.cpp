@@ -128,7 +128,8 @@ void SerializerManager::DeserializePatch(const juce::var& patchData, RackView& r
         i++;
     }
 
-
+    rack.processingManager.PrepareAll(rack.GetAudioConfig().sampleRate, rack.GetAudioConfig().blockSize);
+    rack.processingManager.SetProcessingEnabled(true);
 
     // load connections ------------------------------------------------------------
 
@@ -180,7 +181,6 @@ void SerializerManager::DeserializePatch(const juce::var& patchData, RackView& r
     }
 
 
-    rack.processingManager.SetProcessingEnabled(true);
 }
 
 void SerializerManager::SaveToFile(const RackView& state, const juce::File& file) {

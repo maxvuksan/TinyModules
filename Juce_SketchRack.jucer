@@ -5,6 +5,7 @@
               pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn">
   <MAINGROUP id="a956Ym" name="Juce_SketchRack">
     <GROUP id="{E5BA0798-C99E-B14A-9E1F-BD9FCAE25256}" name="Source">
+      <FILE id="EiyxEs" name="AudioConfig.h" compile="0" resource="0" file="Source/AudioConfig.h"/>
       <GROUP id="{A670713F-DE3C-8585-F43F-C2A6DE1CDC3A}" name="UI">
         <FILE id="VDqdOc" name="Popup_Settings.cpp" compile="1" resource="0"
               file="Source/Popup_Settings.cpp"/>
