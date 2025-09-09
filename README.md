@@ -6,7 +6,7 @@ The tool is written in [C++](https://en.wikipedia.org/wiki/C%2B%2B) with the [JU
 
 Instead of working on a timeline like traditional DAWs (Digital Audio Workstations), Tiny Modules operates in patches producing a continuous output signal. 
 
-A demo patch can be found [here](https://www.youtube.com/watch?v=Tj5VAtoiq7Y)
+An audio demo can be found [here](https://www.youtube.com/watch?v=Tj5VAtoiq7Y)
 
 ![Patching Visual (gif)](/Example_PatchingRealtime.gif?raw=true)
 
